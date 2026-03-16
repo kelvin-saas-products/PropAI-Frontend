@@ -83,3 +83,52 @@ export interface RentProperty extends PropertyBase {
 }
 
 export type AnyProperty = SaleProperty | RentProperty
+
+
+// ── Auth types ─────────────────────────────────────────────────────
+export type UserRole = 'buyer' | 'owner' | 'agent' | 'investor'
+
+export interface AgentProfile {
+  agency_name: string
+  abn: string
+  licence_number: string
+  licence_state: string
+  bio: string
+  specialist_suburbs: string[]
+  logo_url: string | null
+  headshot_url: string | null
+  subscription_plan: 'starter' | 'pro' | 'agency'
+  verified: boolean
+}
+
+export interface BuyerPreferences {
+  intent: string[]
+  min_budget: number | null
+  max_budget: number | null
+  preferred_suburbs: string[]
+  property_types: string[]
+  min_beds: number | null
+  email_alerts: boolean
+  ai_recommendations: boolean
+}
+
+export interface AuthUser {
+  user_id: string
+  email: string
+  first_name: string
+  last_name: string
+  phone: string | null
+  role: UserRole
+  is_active: boolean
+  email_verified: boolean
+  agent_profile: AgentProfile | null
+  buyer_preferences: BuyerPreferences | null
+  created_at: string
+}
+
+export interface TokenResponse {
+  access_token: string
+  token_type: string
+  expires_in: number
+  user: AuthUser
+}
