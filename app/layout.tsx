@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { I18nProvider } from '@/lib/i18n'
 
 export const metadata: Metadata = {
   title: 'PropAI — Find Your Dream Home With AI',
@@ -12,7 +13,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>
+        <I18nProvider>
+          {children}
+        </I18nProvider>
+      </body>
     </html>
   )
 }
