@@ -2,15 +2,18 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState } from 'react'
-<<<<<<< HEAD
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { useI18n, Country } from '@/lib/i18n'
 
 export default function Navbar() {
-  const [open, setOpen]           = useState(false)
+  const [open, setOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const { user, logout }          = useAuth()
-  const router                    = useRouter()
+  const { user, logout } = useAuth()
+  const router = useRouter()
+  const initials = user ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase() : ''
+  const { country, setCountry, language, setLanguage, t } = useI18n()
+  const countries: Country[] = ['Australia', 'Thailand', 'Philippines']
 
   async function handleLogout() {
     await logout()
@@ -18,22 +21,9 @@ export default function Navbar() {
     setUserMenuOpen(false)
   }
 
-  const initials = user ? `${user.first_name[0]}${user.last_name[0]}`.toUpperCase() : ''
-=======
-import { useI18n, Country } from '@/lib/i18n'
-
-export default function Navbar() {
-  const [open, setOpen] = useState(false)
-  const { country, setCountry, language, setLanguage, t } = useI18n()
-
-  const countries: Country[] = ['Australia', 'Thailand', 'Philippines']
->>>>>>> b8a8cd7fdfc39cf2e61c43fb52066bad702306ac
-
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-subtle">
-      <div className="max-w-7xl mx-auto px-5 lg:px-8 h-16 flex items-center justify-between">
-
-        {/* Logo */}
+    <header className="sticky top-0 z-50 bg-white border-b border-subtle">
+      <div className="max-w-7xl mx-auto px-5 lg:px-8 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <Image src="/logo.svg" alt="Prop.AI" width={120} height={35} priority/>
         </Link>
@@ -41,21 +31,14 @@ export default function Navbar() {
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-7">
           {['Buy','Rent','Sold','New Homes','Find Agents','Loans'].map(item => (
-<<<<<<< Updated upstream
             <Link key={item} href="#" className="text-sm text-muted hover:text-ink font-medium transition-colors">{t(item)}</Link>
-=======
-            <Link key={item} href="#"
-              className="text-sm text-ink2 hover:text-ink font-medium transition-colors">
-              {item}
-            </Link>
->>>>>>> Stashed changes
+
           ))}
         </nav>
 
         {/* Auth & Settings */}
         <div className="hidden md:flex items-center gap-3">
-<<<<<<< HEAD
-          {user ? (
+{user ? (
             <div className="relative">
               <button
                 onClick={() => setUserMenuOpen(o => !o)}
@@ -108,19 +91,7 @@ export default function Navbar() {
             </div>
           ) : (
             <>
-              <Link href="/auth/sign-in"
-                className="text-sm font-semibold text-ink2 hover:text-ink transition-colors">
-                Sign in
-              </Link>
-              <Link href="/auth/register"
-                className="text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all hover:opacity-90 hover:shadow-glow"
-                style={{ background: 'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)' }}>
-                Join free
-              </Link>
-            </>
-          )}
-=======
-          {/* Country Selector */}
+              {/* Country Selector */}
           <select 
             value={country} 
             onChange={(e) => setCountry(e.target.value as Country)}
@@ -147,9 +118,18 @@ export default function Navbar() {
             </div>
           )}
 
-          <Link href="#" className="text-sm font-medium text-ink hover:text-muted transition-colors">{t('Sign In')}</Link>
-          <Link href="#" className="bg-ink text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-ink/80 transition-colors">{t('Join')}</Link>
->>>>>>> b8a8cd7fdfc39cf2e61c43fb52066bad702306ac
+              <Link href="/auth/sign-in"
+                className="text-sm font-semibold text-ink2 hover:text-ink transition-colors">
+                Sign in
+              </Link>
+              <Link href="/auth/register"
+                className="text-sm font-semibold text-white px-4 py-2 rounded-xl transition-all hover:opacity-90 hover:shadow-glow"
+                style={{ background: 'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)' }}>
+                Join free
+              </Link>
+            </>
+          )}          
+          
         </div>
 
         {/* Mobile toggle */}
@@ -166,7 +146,6 @@ export default function Navbar() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-white border-t border-subtle px-5 py-4 space-y-3">
-<<<<<<< HEAD
           {['Buy','Rent','Sold','New Homes','Find Agents','Loans'].map(item => (
             <Link key={item} href="#" className="block text-sm text-muted font-medium">{item}</Link>
           ))}
@@ -188,7 +167,6 @@ export default function Navbar() {
               </>
             )}
           </div>
-=======
            <div className="flex flex-col gap-2 mb-3 pb-3 border-b border-subtle">
              <label className="text-xs font-semibold text-muted uppercase">Location & Language</label>
              <select 
@@ -217,7 +195,6 @@ export default function Navbar() {
             <Link key={item} href="#" className="block text-sm text-muted font-medium">{t(item)}</Link>
           ))}
           <Link href="#" className="block bg-ink text-white text-sm font-semibold px-4 py-2.5 rounded-lg text-center">{t('Join')}</Link>
->>>>>>> b8a8cd7fdfc39cf2e61c43fb52066bad702306ac
         </div>
       )}
     </header>
