@@ -27,10 +27,10 @@ export default function VerifyEmailPage() {
     }>
       <div className="text-center py-2">
         {status === 'loading' && (
-          <div className="w-12 h-12 border-4 border-subtle border-t-green rounded-full animate-spin mx-auto mb-4"/>
+          <div className="w-12 h-12 border-4 border-subtle border-t-violet rounded-full animate-spin mx-auto mb-4"/>
         )}
         {status === 'success' && (
-          <div className="w-14 h-14 bg-green-light rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-purple-light rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
             </svg>
@@ -47,12 +47,12 @@ export default function VerifyEmailPage() {
         <p className="text-sm text-muted mb-6">{message}</p>
 
         {status === 'success' && (
-          <Link href="/auth/sign-in" className="block w-full bg-ink text-white font-bold py-3 rounded-xl text-center hover:bg-ink/80 transition-colors text-sm">
+          <Link href="/auth/sign-in" className="block w-full text-white font-bold py-3 rounded-xl text-center hover:opacity-90 transition-all text-sm" style={{background:'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)'}}>
             Sign in to your account →
           </Link>
         )}
         {status === 'error' && (
-          <Link href="/auth/resend-verification" className="block w-full bg-ink text-white font-bold py-3 rounded-xl text-center hover:bg-ink/80 transition-colors text-sm">
+          <Link href="/auth/resend-verification" className="block w-full text-white font-bold py-3 rounded-xl text-center hover:opacity-90 transition-all text-sm" style={{background:'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)'}}>
             Resend verification email
           </Link>
         )}

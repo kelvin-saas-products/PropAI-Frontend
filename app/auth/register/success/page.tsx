@@ -41,7 +41,7 @@ export default function RegisterSuccessPage({
     <AuthCard title="">
       <div className="text-center py-2">
         {/* Icon */}
-        <div className="w-16 h-16 bg-green-light rounded-full flex items-center justify-center mx-auto mb-5">
+        <div className="w-16 h-16 bg-purple-light rounded-full flex items-center justify-center mx-auto mb-5">
           <svg className="w-8 h-8 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
           </svg>
@@ -73,14 +73,14 @@ export default function RegisterSuccessPage({
 
         <Link
           href="/auth/sign-in"
-          className="block w-full bg-ink text-white font-bold py-3 rounded-xl hover:bg-ink/80 transition-colors text-sm"
+          className="block w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all text-sm" style={{background:'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)'}}
         >
           Go to sign in →
         </Link>
 
         <p className="text-xs text-muted mt-4">
           Didn't receive an email?{' '}
-          <Link href="/auth/resend-verification" className="text-green hover:underline font-medium">
+          <Link href="/auth/resend-verification" className="text-violet hover:underline font-medium">
             Resend verification
           </Link>
         </p>

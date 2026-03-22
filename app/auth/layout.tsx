@@ -21,15 +21,14 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Logo */}
         <Link href="/" className="relative flex items-center gap-3 w-fit">
-          <span className="w-9 h-9 bg-green rounded-xl flex items-center justify-center text-white font-black text-sm">P</span>
-          <span className="text-white font-bold text-xl tracking-tight">PropAI</span>
+          <img src="/logo-dark.svg" alt="Prop.AI" style={{height:'32px',width:'auto'}}/>
         </Link>
 
         {/* Headline */}
         <div className="relative space-y-6">
           <h1 className="text-white text-4xl font-black leading-tight tracking-tight">
             Find your next home<br />
-            <span className="text-green">powered by AI.</span>
+            <span className="gradient-text">powered by AI.</span>
           </h1>
           <p className="text-white/50 text-base leading-relaxed max-w-sm">
             PropAI analyses thousands of data points to match you with properties that fit your lifestyle, budget, and long-term goals.
@@ -39,7 +38,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="grid grid-cols-3 gap-4 pt-4">
             {STATS.map(s => (
               <div key={s.label} className="bg-white/5 border border-white/10 rounded-2xl p-4">
-                <p className="text-green text-2xl font-black">{s.value}</p>
+                <p className="gradient-text text-2xl font-black">{s.value}</p>
                 <p className="text-white/40 text-xs mt-1 leading-tight">{s.label}</p>
               </div>
             ))}
@@ -51,7 +50,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               "PropAI's AI Insight spotted details about our property that the agent didn't even mention. We made an offer the same day."
             </p>
             <div className="flex items-center gap-3 mt-4">
-              <div className="w-8 h-8 rounded-full bg-green/20 flex items-center justify-center text-green text-xs font-bold">SK</div>
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-green text-xs font-bold">SK</div>
               <div>
                 <p className="text-white text-xs font-semibold">Sarah K.</p>
                 <p className="text-white/30 text-xs">Bought in Mosman, NSW</p>

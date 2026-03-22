@@ -1,10 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
-<<<<<<< HEAD
 import { AuthProvider } from '@/context/AuthContext'
-=======
 import { I18nProvider } from '@/lib/i18n'
->>>>>>> b8a8cd7fdfc39cf2e61c43fb52066bad702306ac
 
 export const metadata: Metadata = {
   title: 'PropAI — Find Your Dream Home With AI',
@@ -18,15 +15,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
       </head>
       <body>
-<<<<<<< HEAD
         <AuthProvider>
           {children}
         </AuthProvider>
-=======
         <I18nProvider>
           {children}
         </I18nProvider>
->>>>>>> b8a8cd7fdfc39cf2e61c43fb52066bad702306ac
       </body>
     </html>
   )

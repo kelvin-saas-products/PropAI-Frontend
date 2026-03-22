@@ -1,0 +1,66 @@
+<svg width="520" height="150" viewBox="0 0 520 150" xmlns="http://www.w3.org/2000/svg">
+
+<defs>
+<linearGradient id="propGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#20D3B3"/>
+<stop offset="50%" stop-color="#3B82F6"/>
+<stop offset="100%" stop-color="#8B5CF6"/>
+</linearGradient>
+</defs>
+
+<!-- HOUSE ICON -->
+<g stroke="url(#propGradient)" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+<path d="M40 75 L95 25 L150 75"/>
+<rect x="55" y="75" width="80" height="55" rx="14"/>
+</g>
+
+<!-- AI SPARKLES -->
+<g fill="url(#propGradient)">
+
+<!-- Large sparkle -->
+<path d="
+M95 82
+L100 95
+L95 108
+L90 95
+Z"/>
+
+<path d="
+M82 95
+L95 100
+L108 95
+L95 90
+Z"/>
+
+<!-- Small sparkle -->
+<path d="
+M72 96
+L75 103
+L72 110
+L69 103
+Z"/>
+
+<path d="
+M65 103
+L72 106
+L79 103
+L72 100
+Z"/>
+
+</g>
+
+<!-- TEXT -->
+<text
+x="185"
+y="85"
+font-family="Inter, Poppins, Arial, sans-serif"
+font-size="70"
+font-weight="600"
+dominant-baseline="middle"
+fill="#FFFFFF">
+
+Prop<tspan fill="url(#propGradient)">.AI</tspan>
+
+</text>
+
+</svg>

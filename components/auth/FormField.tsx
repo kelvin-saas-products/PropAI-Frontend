@@ -22,7 +22,7 @@ export default function FormField({ label, error, hint, as = 'input', ...rest }:
   const baseClass = `w-full px-4 py-2.5 rounded-xl border text-sm text-ink placeholder:text-muted/60 outline-none transition-all duration-150 ${
     error
       ? 'border-red-400 bg-red-50 focus:border-red-500 focus:ring-2 focus:ring-red-100'
-      : 'border-subtle bg-bg focus:border-green focus:bg-white focus:ring-2 focus:ring-green/10'
+      : 'border-subtle bg-bg focus:border-blue focus:bg-white focus:ring-2 focus:ring-blue/10'
   }`
 
   return (

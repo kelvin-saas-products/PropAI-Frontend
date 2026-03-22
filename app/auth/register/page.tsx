@@ -11,7 +11,7 @@ import type { UserRole } from '@/lib/types'
 
 // ── Persona config ─────────────────────────────────────────────────
 const PERSONAS: { role: UserRole; icon: string; title: string; desc: string; bg: string }[] = [
-  { role: 'buyer',    icon: '🔍', title: 'Property Seeker', desc: 'Searching to buy or rent',        bg: 'bg-green-light' },
+  { role: 'buyer',    icon: '🔍', title: 'Property Seeker', desc: 'Searching to buy or rent',        bg: 'bg-purple-light' },
   { role: 'owner',    icon: '🏡', title: 'Property Owner',  desc: 'Track value & equity',            bg: 'bg-blue-light' },
   { role: 'agent',    icon: '💼', title: 'Real Estate Agent', desc: 'List & manage properties',      bg: 'bg-orange-light' },
   { role: 'investor', icon: '📈', title: 'Investor',         desc: 'Portfolio & rental yields',      bg: 'bg-purple-light' },
@@ -219,7 +219,7 @@ export default function RegisterPage() {
                   <p className="text-xs text-muted mt-0.5">{p.desc}</p>
                 </div>
                 {form.role === p.role && (
-                  <div className="absolute top-2 right-2 w-4 h-4 bg-green rounded-full flex items-center justify-center">
+                  <div className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center">
                     <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
                     </svg>
@@ -246,7 +246,7 @@ export default function RegisterPage() {
                   type="password" placeholder="Min. 8 characters"
                   value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                   autoComplete="new-password"
-                  className={`w-full px-4 py-2.5 rounded-xl border text-sm text-ink placeholder:text-muted/60 outline-none transition-all ${errors.password ? 'border-red-400 bg-red-50' : 'border-subtle bg-bg focus:border-green focus:bg-white focus:ring-2 focus:ring-green/10'}`}
+                  className={`w-full px-4 py-2.5 rounded-xl border text-sm text-ink placeholder:text-muted/60 outline-none transition-all ${errors.password ? 'border-red-400 bg-red-50' : 'border-subtle bg-bg focus:border-blue focus:bg-white focus:ring-2 focus:ring-blue/10'}`}
                 />
               </div>
               {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
@@ -271,7 +271,7 @@ export default function RegisterPage() {
               <div className="space-y-1.5">
                 <label className="block text-xs font-semibold text-ink/70 uppercase tracking-wide">Licence state</label>
                 <select value={form.licence_state} onChange={set('licence_state')}
-                  className={`w-full px-4 py-2.5 rounded-xl border text-sm text-ink outline-none transition-all ${errors.licence_state ? 'border-red-400 bg-red-50' : 'border-subtle bg-bg focus:border-green focus:bg-white'}`}>
+                  className={`w-full px-4 py-2.5 rounded-xl border text-sm text-ink outline-none transition-all ${errors.licence_state ? 'border-red-400 bg-red-50' : 'border-subtle bg-bg focus:border-blue focus:bg-white'}`}>
                   <option value="">Select…</option>
                   {STATES.map(s => <option key={s}>{s}</option>)}
                 </select>
@@ -293,7 +293,7 @@ export default function RegisterPage() {
             {/* Logo upload */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-ink/70 uppercase tracking-wide">Agency logo</label>
-              <div className="border-2 border-dashed border-subtle rounded-2xl p-6 text-center cursor-pointer hover:border-green hover:bg-green-light/30 transition-all">
+              <div className="border-2 border-dashed border-subtle rounded-2xl p-6 text-center cursor-pointer hover:border-green hover:bg-purple-light/30 transition-all">
                 <div className="text-3xl mb-2">🏢</div>
                 <p className="text-sm font-medium text-ink">Click to upload your logo</p>
                 <p className="text-xs text-muted mt-1">PNG or SVG · min 200×200px · max 5MB</p>
@@ -302,7 +302,7 @@ export default function RegisterPage() {
             {/* Headshot upload */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-ink/70 uppercase tracking-wide">Profile headshot</label>
-              <div className="border-2 border-dashed border-subtle rounded-2xl p-6 text-center cursor-pointer hover:border-green hover:bg-green-light/30 transition-all">
+              <div className="border-2 border-dashed border-subtle rounded-2xl p-6 text-center cursor-pointer hover:border-green hover:bg-purple-light/30 transition-all">
                 <div className="text-3xl mb-2">👤</div>
                 <p className="text-sm font-medium text-ink">Upload a professional photo</p>
                 <p className="text-xs text-muted mt-1">JPG or PNG · square crop recommended</p>
@@ -347,7 +347,7 @@ export default function RegisterPage() {
                 </button>
               ))}
             </div>
-            <div className="bg-green-light rounded-xl p-3.5 flex gap-3 text-sm text-muted">
+            <div className="bg-purple-light rounded-xl p-3.5 flex gap-3 text-sm text-muted">
               <svg className="w-4 h-4 text-green flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
@@ -355,8 +355,8 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" defaultChecked className="mt-0.5 accent-green" />
-                <span className="text-xs text-muted">I agree to the <Link href="#" className="text-green hover:underline">Terms of Service</Link> and <Link href="#" className="text-green hover:underline">Agent Subscription Agreement</Link></span>
+                <input type="checkbox" defaultChecked className="mt-0.5 accent-violet" />
+                <span className="text-xs text-muted">I agree to the <Link href="#" className="text-violet hover:underline">Terms of Service</Link> and <Link href="#" className="text-violet hover:underline">Agent Subscription Agreement</Link></span>
               </label>
             </div>
           </div>
@@ -393,21 +393,21 @@ export default function RegisterPage() {
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-ink/70 uppercase tracking-wide">Minimum bedrooms</label>
               <select value={form.min_beds} onChange={set('min_beds')}
-                className="w-full px-4 py-2.5 rounded-xl border border-subtle bg-bg text-sm text-ink outline-none focus:border-green focus:bg-white">
+                className="w-full px-4 py-2.5 rounded-xl border border-subtle bg-bg text-sm text-ink outline-none focus:border-blue focus:bg-white">
                 <option value="">Any</option>
                 {['1','2','3','4','5+'].map(n => <option key={n} value={n}>{n}+</option>)}
               </select>
             </div>
             <div className="border-t border-subtle pt-4 space-y-3">
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.email_alerts} onChange={e => setForm(f => ({ ...f, email_alerts: e.target.checked }))} className="mt-0.5 accent-green"/>
+                <input type="checkbox" checked={form.email_alerts} onChange={e => setForm(f => ({ ...f, email_alerts: e.target.checked }))} className="mt-0.5 accent-violet"/>
                 <div>
                   <p className="text-sm font-medium text-ink">Email alerts for matching properties</p>
                   <p className="text-xs text-muted">Get notified as soon as new listings match your criteria</p>
                 </div>
               </label>
               <label className="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" checked={form.ai_recommendations} onChange={e => setForm(f => ({ ...f, ai_recommendations: e.target.checked }))} className="mt-0.5 accent-green"/>
+                <input type="checkbox" checked={form.ai_recommendations} onChange={e => setForm(f => ({ ...f, ai_recommendations: e.target.checked }))} className="mt-0.5 accent-violet"/>
                 <div>
                   <p className="text-sm font-medium text-ink">AI-powered recommendations</p>
                   <p className="text-xs text-muted">PropAI learns your preferences and surfaces hidden gems</p>
@@ -439,7 +439,7 @@ export default function RegisterPage() {
             type="button"
             onClick={lastStep ? handleSubmit : next}
             disabled={loading}
-            className="flex-1 bg-ink text-white font-bold py-2.5 rounded-xl hover:bg-ink/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 text-white font-bold py-2.5 rounded-xl hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed" style={{background:'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)'}}
           >
             {loading ? 'Creating account…' :
              lastStep ? (isAgent ? 'Start free trial →' : 'Create account →') :
@@ -450,7 +450,7 @@ export default function RegisterPage() {
         {step === 0 && (
           <p className="text-center text-sm text-muted mt-5">
             Already have an account?{' '}
-            <Link href="/auth/sign-in" className="text-green font-semibold hover:underline">Sign in</Link>
+            <Link href="/auth/sign-in" className="text-violet font-semibold hover:underline">Sign in</Link>
           </p>
         )}
       </AuthCard>

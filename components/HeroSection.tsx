@@ -95,8 +95,8 @@ export default function HeroSection() {
           </div>
           {/* Floating chip — AI Match */}
           <div className="absolute top-8 left-0 -translate-x-1/3 bg-white rounded-2xl px-4 py-3 shadow-float flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-light rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-8 h-8 bg-teal-light rounded-lg flex items-center justify-center">
+              <svg className="w-4 h-4 gradient-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
               </svg>
             </div>

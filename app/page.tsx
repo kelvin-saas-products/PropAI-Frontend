@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
 import FeaturedGrid from '@/components/FeaturedGrid'
@@ -189,8 +190,9 @@ export default function HomePage() {
       <footer className="bg-dark border-t border-white/10 px-5 lg:px-8 py-10">
         <div className="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-6">
           <div className="flex items-center gap-2 text-white font-bold text-lg">
-            <span className="w-7 h-7 bg-white rounded-md flex items-center justify-center text-ink text-xs font-bold">P</span>
-            PropAI
+            <Link href="/" className="flex items-center">
+              <Image src="/logo-dark.svg" alt="Prop.AI" width={120} height={35} priority/>
+            </Link>
           </div>
           <nav className="flex flex-wrap gap-6">
             {['Buy','Rent','Sell','Insights','Privacy','Terms'].map(item => (

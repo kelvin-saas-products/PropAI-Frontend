@@ -1,19 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+
 html { scroll-behavior: smooth; }
 
 body {
-  background-color: #F2F2F2;
-  color: #111111;
-  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #FFFFFF;
+  color: #0F172A;
+  font-family: 'Inter', 'Poppins', -apple-system, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Hide scrollbars on tab strips */
+/* Brand gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #20D3B3 0%, #3B82F6 50%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Brand gradient border */
+.gradient-border {
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  position: relative;
+}
+
+/* Scrollbar hiding */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 

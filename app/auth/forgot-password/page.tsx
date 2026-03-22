@@ -28,7 +28,7 @@ export default function ForgotPasswordPage() {
     return (
       <AuthCard title="Check your inbox" backHref="/auth/sign-in" backLabel="Back to sign in">
         <div className="text-center py-4">
-          <div className="w-14 h-14 bg-green-light rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-purple-light rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
             </svg>
@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-ink text-white font-bold py-3 rounded-xl hover:bg-ink/80 transition-colors disabled:opacity-50"
+          className="w-full text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all disabled:opacity-50" style={{background:'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)'}}
         >
           {loading ? 'Sending…' : 'Send reset link'}
         </button>
