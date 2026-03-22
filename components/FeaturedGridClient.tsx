@@ -14,15 +14,18 @@ export default function FeaturedGridClient({
   rentProps: AnyPropertyCard[]
 }) {
   const [tab, setTab] = useState<Tab>('all')
-  const { t } = useI18n()
+  const { t, country } = useI18n()
 
-  const allProps = [...saleProps, ...rentProps]
-  const displayed = tab === 'all' ? allProps : tab === 'sale' ? saleProps : rentProps
+  const filteredSaleProps = saleProps.filter(p => p.country === country)
+  const filteredRentProps = rentProps.filter(p => p.country === country)
+
+  const allProps = [...filteredSaleProps, ...filteredRentProps]
+  const displayed = tab === 'all' ? allProps : tab === 'sale' ? filteredSaleProps : filteredRentProps
 
   const tabs: { id: Tab; label: string; count: number }[] = [
     { id: 'all',  label: t('All'),       count: allProps.length },
-    { id: 'sale', label: '🏷 ' + t('Buy'),    count: saleProps.length },
-    { id: 'rent', label: '🔑 ' + t('Rent'),   count: rentProps.length },
+    { id: 'sale', label: '🏷 ' + t('Buy'),    count: filteredSaleProps.length },
+    { id: 'rent', label: '🔑 ' + t('Rent'),   count: filteredRentProps.length },
   ]
 
   return (

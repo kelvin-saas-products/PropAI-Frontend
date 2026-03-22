@@ -19,7 +19,7 @@ interface PropertyCardBase {
   property_id: string
   slug: string
   title: string
-  address: string; suburb: string; state: string; postcode: string
+  address: string; suburb: string; state: string; postcode: string; country: string
   beds: number; baths: number; cars: number; land: string
   badge: Badge
   aiMatch: number
