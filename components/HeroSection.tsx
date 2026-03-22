@@ -2,9 +2,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useI18n } from '@/lib/i18n'
 
 export default function HeroSection() {
   const [query, setQuery] = useState('')
+  const { t } = useI18n()
 
   return (
     <section className="bg-bg px-5 lg:px-8 pt-16 pb-20">
@@ -15,15 +17,15 @@ export default function HeroSection() {
             <svg className="w-4 h-4 text-ink" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
             </svg>
-            AI-Powered Property Search
+            {t('AI-Powered Property Search')}
           </div>
 
           <h1 className="text-5xl lg:text-6xl font-black text-ink leading-[1.05] tracking-tight mb-6">
-            Find Your<br />Dream Home<br />With AI<br />Intelligence
+            <span dangerouslySetInnerHTML={{ __html: t('Find Your Dream Home With AI Intelligence').replace('Dream Home', 'Dream Home<br />').replace('AI Intelligence', 'AI<br />Intelligence') }} />
           </h1>
 
           <p className="text-muted text-base leading-relaxed mb-8 max-w-md">
-            Discover properties that match your lifestyle, budget, and aspirations. Our AI analyses thousands of data points to find your perfect match.
+            {t('Discover properties that match your lifestyle, budget, and aspirations. Our AI analyses thousands of data points to find your perfect match.')}
           </p>
 
           {/* Search bar */}
@@ -35,11 +37,11 @@ export default function HeroSection() {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Describe your ideal home..."
+              placeholder={t('Describe your ideal home...')}
               className="flex-1 bg-transparent outline-none text-sm text-ink placeholder:text-muted py-3"
             />
             <button className="bg-ink text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-ink/80 transition-colors">
-              Search
+              {t('Search')}
             </button>
           </div>
 
@@ -53,10 +55,10 @@ export default function HeroSection() {
             ].map(h => (
               <button
                 key={h}
-                onClick={() => setQuery(h)}
+                onClick={() => setQuery(t(h))}
                 className="bg-white border border-subtle rounded-full px-3 py-1.5 text-xs text-muted hover:text-ink hover:border-ink/30 transition-all duration-200"
               >
-                {h}
+                {t(h)}
               </button>
             ))}
           </div>
@@ -72,7 +74,7 @@ export default function HeroSection() {
                 <span className="text-xl">{s.icon}</span>
                 <div>
                   <p className="text-xl font-bold text-ink leading-none">{s.val}</p>
-                  <p className="text-xs text-muted mt-0.5">{s.label}</p>
+                  <p className="text-xs text-muted mt-0.5">{t(s.label)}</p>
                 </div>
               </div>
             ))}
@@ -99,8 +101,8 @@ export default function HeroSection() {
               </svg>
             </div>
             <div>
-              <p className="text-xs font-semibold text-ink leading-none">AI Match</p>
-              <p className="text-xs text-muted mt-0.5">98% Accuracy</p>
+              <p className="text-xs font-semibold text-ink leading-none">{t('AI Match')}</p>
+              <p className="text-xs text-muted mt-0.5">{t('98% Accuracy')}</p>
             </div>
           </div>
           {/* Floating chip — New Listing */}
@@ -111,8 +113,8 @@ export default function HeroSection() {
               </svg>
             </div>
             <div>
-              <p className="text-xs font-semibold text-ink leading-none">New Listing</p>
-              <p className="text-xs text-muted mt-0.5">Just added today</p>
+              <p className="text-xs font-semibold text-ink leading-none">{t('New Listing')}</p>
+              <p className="text-xs text-muted mt-0.5">{t('Just added today')}</p>
             </div>
           </div>
         </div>

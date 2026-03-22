@@ -3,6 +3,7 @@ import Navbar from '@/components/Navbar'
 import HeroSection from '@/components/HeroSection'
 import FeaturedGrid from '@/components/FeaturedGrid'
 import { SUBURB_STATS } from '@/lib/data'
+import { T } from '@/lib/i18n'
 
 export const revalidate = 60 // ISR: re-fetch from API every 60s
 
@@ -18,8 +19,8 @@ export default function HomePage() {
       <section className="bg-white px-5 lg:px-8 py-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl lg:text-4xl font-black text-ink mb-3">How PropAI Works</h2>
-            <p className="text-muted">Three simple steps to your perfect property</p>
+            <h2 className="text-3xl lg:text-4xl font-black text-ink mb-3"><T k="How PropAI Works" /></h2>
+            <p className="text-muted"><T k="Three simple steps to your perfect property" /></p>
             <div className="w-12 h-0.5 bg-ink mx-auto mt-4" />
           </div>
 
@@ -56,8 +57,8 @@ export default function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d={step.iconPath}/>
                   </svg>
                 </div>
-                <h3 className="font-bold text-ink text-lg mb-2">{step.title}</h3>
-                <p className="text-sm text-muted leading-relaxed">{step.desc}</p>
+                <h3 className="font-bold text-ink text-lg mb-2"><T k={step.title} /></h3>
+                <p className="text-sm text-muted leading-relaxed"><T k={step.desc} /></p>
               </div>
             ))}
           </div>
@@ -69,10 +70,10 @@ export default function HomePage() {
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
-                AI Technology
+                <T k="AI Technology" />
               </div>
-              <h2 className="text-3xl lg:text-4xl font-black text-ink mb-3">AI-Powered Intelligence</h2>
-              <p className="text-muted mb-8">Technology that understands what you need</p>
+              <h2 className="text-3xl lg:text-4xl font-black text-ink mb-3"><T k="AI-Powered Intelligence" /></h2>
+              <p className="text-muted mb-8"><T k="Technology that understands what you need" /></p>
               <div className="space-y-5">
                 {[
                   { icon: '💬', title: 'Natural Language Search', desc: "Search like you're talking to a friend. No more complicated filters." },
@@ -83,8 +84,8 @@ export default function HomePage() {
                   <div key={f.title} className="flex items-start gap-4 p-4 rounded-xl hover:bg-bg transition-colors">
                     <div className="w-9 h-9 bg-bg border border-subtle rounded-xl flex items-center justify-center text-lg flex-shrink-0">{f.icon}</div>
                     <div>
-                      <p className="font-semibold text-ink text-sm mb-0.5">{f.title}</p>
-                      <p className="text-xs text-muted leading-relaxed">{f.desc}</p>
+                      <p className="font-semibold text-ink text-sm mb-0.5"><T k={f.title} /></p>
+                      <p className="text-xs text-muted leading-relaxed"><T k={f.desc} /></p>
                     </div>
                   </div>
                 ))}
@@ -96,14 +97,14 @@ export default function HomePage() {
                 <img src="https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=700&q=85" alt="AI features" className="w-full h-full object-cover"/>
               </div>
               <div className="absolute top-6 left-0 -translate-x-1/4 bg-white rounded-2xl px-4 py-3 shadow-float min-w-36">
-                <p className="text-xs text-muted mb-1">Price Prediction</p>
+                <p className="text-xs text-muted mb-1"><T k="Price Prediction" /></p>
                 <p className="text-2xl font-black text-green leading-none">+12.5%</p>
-                <p className="text-xs text-muted mt-0.5">Growth forecast</p>
+                <p className="text-xs text-muted mt-0.5"><T k="Growth forecast" /></p>
               </div>
               <div className="absolute bottom-8 right-0 translate-x-1/4 bg-white rounded-2xl px-4 py-3 shadow-float text-right">
-                <p className="text-xs text-muted mb-1">School Rating</p>
+                <p className="text-xs text-muted mb-1"><T k="School Rating" /></p>
                 <p className="text-2xl font-black text-blue leading-none">9.2<span className="text-sm font-normal text-muted">/10</span></p>
-                <p className="text-xs text-muted mt-0.5">Nearby schools</p>
+                <p className="text-xs text-muted mt-0.5"><T k="Nearby schools" /></p>
               </div>
             </div>
           </div>
@@ -115,11 +116,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between mb-10">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-black text-white">Featured Properties</h2>
-              <p className="text-white/50 mt-1 text-sm">Handpicked homes matched by our AI</p>
+              <h2 className="text-3xl lg:text-4xl font-black text-white"><T k="Featured Properties" /></h2>
+              <p className="text-white/50 mt-1 text-sm"><T k="Handpicked homes matched by our AI" /></p>
             </div>
             <Link href="#" className="text-sm font-medium text-white/60 hover:text-white transition-colors">
-              View All Properties →
+              <T k="View All Properties →" />
             </Link>
           </div>
 
@@ -132,8 +133,8 @@ export default function HomePage() {
       <section className="bg-white px-5 lg:px-8 py-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-black text-ink mb-2">Market Insights</h2>
-            <p className="text-muted text-sm">Data-driven intelligence for smarter decisions</p>
+            <h2 className="text-3xl lg:text-4xl font-black text-ink mb-2"><T k="Market Insights" /></h2>
+            <p className="text-muted text-sm"><T k="Data-driven intelligence for smarter decisions" /></p>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-14">
             {[
@@ -145,12 +146,12 @@ export default function HomePage() {
               <div key={m.label} className="bg-bg rounded-2xl p-6 text-center">
                 <div className={`w-12 h-12 ${m.bg} rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4`}>{m.icon}</div>
                 <p className={`text-3xl font-black ${m.color} mb-1`}>{m.val}</p>
-                <p className="text-xs text-muted">{m.label}</p>
+                <p className="text-xs text-muted"><T k={m.label} /></p>
               </div>
             ))}
           </div>
 
-          <h3 className="font-bold text-ink text-xl mb-5">Trending Suburbs</h3>
+          <h3 className="font-bold text-ink text-xl mb-5"><T k="Trending Suburbs" /></h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {SUBURB_STATS.map(s => (
               <div key={s.name} className="bg-bg rounded-xl p-5 hover:bg-subtle/40 transition-colors cursor-pointer">
@@ -162,9 +163,9 @@ export default function HomePage() {
                   <span className={`text-sm font-bold ${s.growthPos ? 'text-green' : 'text-orange'}`}>{s.growth}</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div><p className="text-muted">Median</p><p className="font-semibold text-ink mt-0.5">{s.medianPrice}</p></div>
-                  <div><p className="text-muted">Yield</p><p className="font-semibold text-ink mt-0.5">{s.rentalYield}</p></div>
-                  <div><p className="text-muted">Safety</p><p className="font-semibold text-ink mt-0.5">{s.safetyScore}/10</p></div>
+                  <div><p className="text-muted"><T k="Median" /></p><p className="font-semibold text-ink mt-0.5">{s.medianPrice}</p></div>
+                  <div><p className="text-muted"><T k="Yield" /></p><p className="font-semibold text-ink mt-0.5">{s.rentalYield}</p></div>
+                  <div><p className="text-muted"><T k="Safety" /></p><p className="font-semibold text-ink mt-0.5">{s.safetyScore}/10</p></div>
                 </div>
               </div>
             ))}
@@ -175,11 +176,11 @@ export default function HomePage() {
       {/* ── CTA ──────────────────────────────────────────────────── */}
       <section className="bg-ink px-5 lg:px-8 py-20">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl lg:text-4xl font-black text-white mb-4">Ready to find your perfect home?</h2>
-          <p className="text-white/50 mb-8">Join 50,000+ Australians who found their home with PropAI</p>
+          <h2 className="text-3xl lg:text-4xl font-black text-white mb-4"><T k="Ready to find your perfect home?" /></h2>
+          <p className="text-white/50 mb-8"><T k="Join 50,000+ Australians who found their home with PropAI" /></p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="#" className="bg-white text-ink font-bold px-8 py-3.5 rounded-xl hover:bg-white/90 transition-colors text-sm">Start AI Search</Link>
-            <Link href="#" className="border border-white/20 text-white font-medium px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-sm">Browse Listings</Link>
+            <Link href="#" className="bg-white text-ink font-bold px-8 py-3.5 rounded-xl hover:bg-white/90 transition-colors text-sm"><T k="Start AI Search" /></Link>
+            <Link href="#" className="border border-white/20 text-white font-medium px-8 py-3.5 rounded-xl hover:bg-white/10 transition-colors text-sm"><T k="Browse Listings" /></Link>
           </div>
         </div>
       </section>
@@ -193,7 +194,7 @@ export default function HomePage() {
           </div>
           <nav className="flex flex-wrap gap-6">
             {['Buy','Rent','Sell','Insights','Privacy','Terms'].map(item => (
-              <Link key={item} href="#" className="text-sm text-white/40 hover:text-white transition-colors">{item}</Link>
+              <Link key={item} href="#" className="text-sm text-white/40 hover:text-white transition-colors"><T k={item} /></Link>
             ))}
           </nav>
           <p className="text-sm text-white/30">© 2025 PropAI. AI-powered property search.</p>

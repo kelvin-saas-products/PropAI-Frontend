@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import PropertyCard from './PropertyCard'
 import type { AnyPropertyCard } from '@/lib/types'
+import { useI18n } from '@/lib/i18n'
 
 type Tab = 'all' | 'sale' | 'rent'
 
@@ -13,14 +14,18 @@ export default function FeaturedGridClient({
   rentProps: AnyPropertyCard[]
 }) {
   const [tab, setTab] = useState<Tab>('all')
+  const { t, country } = useI18n()
 
-  const allProps = [...saleProps, ...rentProps]
-  const displayed = tab === 'all' ? allProps : tab === 'sale' ? saleProps : rentProps
+  const filteredSaleProps = saleProps.filter(p => p.country === country)
+  const filteredRentProps = rentProps.filter(p => p.country === country)
+
+  const allProps = [...filteredSaleProps, ...filteredRentProps]
+  const displayed = tab === 'all' ? allProps : tab === 'sale' ? filteredSaleProps : filteredRentProps
 
   const tabs: { id: Tab; label: string; count: number }[] = [
-    { id: 'all',  label: 'All',       count: allProps.length },
-    { id: 'sale', label: '🏷 Buy',    count: saleProps.length },
-    { id: 'rent', label: '🔑 Rent',   count: rentProps.length },
+    { id: 'all',  label: t('All'),       count: allProps.length },
+    { id: 'sale', label: '🏷 ' + t('Buy'),    count: filteredSaleProps.length },
+    { id: 'rent', label: '🔑 ' + t('Rent'),   count: filteredRentProps.length },
   ]
 
   return (
@@ -49,7 +54,7 @@ export default function FeaturedGridClient({
 
       {/* Grid */}
       {displayed.length === 0 ? (
-        <p className="text-white/30 text-sm text-center py-10">No properties in this category.</p>
+        <p className="text-white/30 text-sm text-center py-10">{t('No properties in this category.')}</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {displayed.map(p => (
