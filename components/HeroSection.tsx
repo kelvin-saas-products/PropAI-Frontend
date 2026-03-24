@@ -15,7 +15,7 @@ export default function HeroSection() {
   const [focused, setFocused] = useState(false)
 
   return (
-    <section className="relative min-h-[92vh] flex flex-col items-center justify-center px-5 overflow-hidden">
+    <section className="relative min-h-[80vh] flex flex-col items-center justify-center px-5 overflow-hidden">
       {/* Gradient background mesh */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-[#E0FAF6]/40 via-white to-[#F0EEFF]/40" />
