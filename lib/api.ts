@@ -13,3 +13,9 @@ export const getFeaturedSale        = () => apiFetch<AnyPropertyCard[]>('/proper
 export const getFeaturedRent        = () => apiFetch<AnyPropertyCard[]>('/properties/featured?listingType=rent')
 export const getPropertyBySlug      = (slug: string) => apiFetch<AnyProperty>(`/properties/${slug}`)
 export const getPropertyById        = (id: string) => apiFetch<AnyProperty>(`/properties/id/${id}`)
+
+export function getPropertiesForSale(country?: string): Promise<AnyPropertyCard[]> {
+  const params = new URLSearchParams({ listingType: 'sale' })
+  if (country) params.set('country', country)
+  return apiFetch<AnyPropertyCard[]>(`/properties?${params.toString()}`)
+}
