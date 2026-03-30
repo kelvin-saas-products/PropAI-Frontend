@@ -15,7 +15,7 @@ export const getPropertyBySlug      = (slug: string) => apiFetch<AnyProperty>(`/
 export const getPropertyById        = (id: string) => apiFetch<AnyProperty>(`/properties/id/${id}`)
 
 export function getPropertiesForSale(country?: string): Promise<AnyPropertyCard[]> {
-  const params = new URLSearchParams({ listingType: 'sale' })
+  const params = new URLSearchParams({ listingType: 'sale', limit: '200' })
   if (country) params.set('country', country)
   return apiFetch<AnyPropertyCard[]>(`/properties?${params.toString()}`)
 }
