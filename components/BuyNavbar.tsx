@@ -123,6 +123,15 @@ export default function BuyNavbar() {
     pushFilter({ types: next.join(',') })
   }
 
+  // When user picks a country: persist to i18n (→ localStorage), push to URL
+  function handleCountryChange(newCountry: Country) {
+    setCountry(newCountry)
+    const p = new URLSearchParams(searchParams.toString())
+    p.set('country', newCountry)
+    p.set('page', '1')          // reset to first page on country switch
+    router.push(`/buy?${p.toString()}`)
+  }
+
   async function handleLogout() {
     await logout()
     router.push('/')
@@ -257,7 +266,7 @@ export default function BuyNavbar() {
           {/* Country selector */}
           <select
             value={country}
-            onChange={e => setCountry(e.target.value as Country)}
+            onChange={e => handleCountryChange(e.target.value as Country)}
             className="text-sm bg-bg border border-subtle rounded-md px-2 py-1 text-ink outline-none"
           >
             {countries.map(c => <option key={c} value={c}>{c}</option>)}

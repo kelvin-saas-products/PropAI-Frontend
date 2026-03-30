@@ -1,84 +1,114 @@
 'use client'
-import { useMemo, useRef, useState, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
-import PropertyListingCard, { CARD_HEIGHT, CARD_GAP, CARD_STRIDE } from './PropertyListingCard'
+import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import PropertyListingCard from './PropertyListingCard'
 import Breadcrumb from './Breadcrumb'
+import { getProperties } from '@/lib/api'
+import type { PaginatedProperties } from '@/lib/api'
 import type { SalePropertyCard } from '@/lib/types'
 import { useI18n } from '@/lib/i18n'
 
-// ── Virtual scroller ──────────────────────────────────────────────
-// Renders only the cards currently visible in the viewport plus an
-// overscan buffer. A single spacer div keeps the scrollbar correct.
+// ── Page-size options ─────────────────────────────────────────────────────
+const PAGE_SIZE_OPTIONS = [25, 50, 100] as const
+type PageSize = (typeof PAGE_SIZE_OPTIONS)[number]
 
-const OVERSCAN = 3
-
-interface VirtualListProps {
-  items: SalePropertyCard[]
+// ── Pagination bar ─────────────────────────────────────────────────────────
+interface PaginationBarProps {
+  page: number
+  totalPages: number
+  total: number
+  pageSize: PageSize
+  onPageChange: (p: number) => void
+  onPageSizeChange: (s: PageSize) => void
 }
 
-function VirtualPropertyList({ items }: VirtualListProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [scrollTop,  setScrollTop]  = useState(0)
-  const [viewHeight, setViewHeight] = useState(600)
+function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPageSizeChange }: PaginationBarProps) {
+  // Build compact page-number list: always show first, last, current ±1, with "…" gaps
+  const pages = useMemo(() => {
+    if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1)
+    const result: (number | '…')[] = []
+    const add = (n: number) => { if (!result.includes(n)) result.push(n) }
+    add(1)
+    if (page > 3) result.push('…')
+    for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) add(i)
+    if (page < totalPages - 2) result.push('…')
+    add(totalPages)
+    return result
+  }, [page, totalPages])
 
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    const ro = new ResizeObserver(([entry]) => {
-      setViewHeight(entry.contentRect.height)
-    })
-    ro.observe(el)
-    setViewHeight(el.clientHeight)
-    return () => ro.disconnect()
-  }, [])
-
-  const onScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop((e.target as HTMLDivElement).scrollTop)
-  }, [])
-
-  const { startIndex, endIndex, totalHeight, offsetTop } = useMemo(() => {
-    const totalHeight = items.length * CARD_STRIDE - CARD_GAP
-    const rawStart    = Math.floor(scrollTop / CARD_STRIDE)
-    const rawEnd      = Math.ceil((scrollTop + viewHeight) / CARD_STRIDE)
-    const startIndex  = Math.max(0, rawStart - OVERSCAN)
-    const endIndex    = Math.min(items.length - 1, rawEnd + OVERSCAN)
-    const offsetTop   = startIndex * CARD_STRIDE
-    return { startIndex, endIndex, totalHeight, offsetTop }
-  }, [scrollTop, viewHeight, items.length])
-
-  const visibleItems = items.slice(startIndex, endIndex + 1)
+  const btnBase = 'h-9 min-w-[36px] px-2 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center'
 
   return (
-    <div
-      ref={containerRef}
-      className="overflow-y-auto h-full"
-      onScroll={onScroll}
-    >
-      <div style={{ height: totalHeight, position: 'relative' }}>
-        <div style={{ position: 'absolute', top: offsetTop, left: 0, right: 0 }}>
-          {visibleItems.map((p, i) => (
-            <div
-              key={p.property_id}
-              style={{
-                height: CARD_HEIGHT,
-                marginBottom: i < visibleItems.length - 1 ? CARD_GAP : 0,
-              }}
-            >
-              <PropertyListingCard property={p} />
-            </div>
-          ))}
+    <div className="flex items-center justify-between flex-wrap gap-3 pt-4 border-t border-subtle">
+      {/* Left: total + page-size picker */}
+      <div className="flex items-center gap-3">
+        <span className="text-sm text-muted">
+          {total.toLocaleString()} {total === 1 ? 'result' : 'results'}
+        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-muted">Show</span>
+          <select
+            value={pageSize}
+            onChange={e => onPageSizeChange(Number(e.target.value) as PageSize)}
+            className="text-sm bg-bg border border-subtle rounded-xl px-2 py-1.5 text-ink outline-none font-medium"
+          >
+            {PAGE_SIZE_OPTIONS.map(s => (
+              <option key={s} value={s}>{s} per page</option>
+            ))}
+          </select>
         </div>
+      </div>
+
+      {/* Right: prev / numbered / next */}
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPageChange(page - 1)}
+          disabled={page === 1}
+          className={`${btnBase} gap-1 ${page === 1 ? 'text-muted/40 cursor-not-allowed' : 'text-ink hover:bg-surface'}`}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
+          </svg>
+          Prev
+        </button>
+
+        {pages.map((p, i) =>
+          p === '…' ? (
+            <span key={`ellipsis-${i}`} className="h-9 w-6 flex items-center justify-center text-sm text-muted select-none">…</span>
+          ) : (
+            <button
+              key={p}
+              onClick={() => onPageChange(p)}
+              className={`${btnBase} ${
+                p === page
+                  ? 'bg-ink text-white'
+                  : 'text-ink hover:bg-surface'
+              }`}
+            >
+              {p}
+            </button>
+          )
+        )}
+
+        <button
+          onClick={() => onPageChange(page + 1)}
+          disabled={page === totalPages}
+          className={`${btnBase} gap-1 ${page === totalPages ? 'text-muted/40 cursor-not-allowed' : 'text-ink hover:bg-surface'}`}
+        >
+          Next
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
       </div>
     </div>
   )
 }
 
-// ── Ad / announcement sidebar ─────────────────────────────────────
-
+// ── Ad / announcement sidebar ─────────────────────────────────────────────
 function AdSidebar() {
   return (
-    <aside className="hidden xl:flex flex-col gap-4 w-[300px] flex-shrink-0 overflow-y-auto pb-2">
-
+    <aside className="hidden xl:flex flex-col gap-4 w-[300px] flex-shrink-0">
       {/* Sponsored slot */}
       <div className="bg-white rounded-2xl shadow-card overflow-hidden border border-subtle">
         <div className="bg-gradient-to-r from-teal to-blue px-4 py-2">
@@ -138,9 +168,9 @@ function AdSidebar() {
         <p className="text-xs font-bold uppercase tracking-wider text-muted mb-3">Open Homes · This Weekend</p>
         <div className="space-y-2.5">
           {[
-            { time: 'Sat 10:00–10:30 AM', address: '42 Park Ave, Mosman'        },
-            { time: 'Sat 11:00–11:30 AM', address: '15 Surf Pde, Broadbeach'    },
-            { time: 'Sun 1:00–1:30 PM',   address: '88 Collins St, Melbourne'   },
+            { time: 'Sat 10:00–10:30 AM', address: '42 Park Ave, Mosman'      },
+            { time: 'Sat 11:00–11:30 AM', address: '15 Surf Pde, Broadbeach'  },
+            { time: 'Sun 1:00–1:30 PM',   address: '88 Collins St, Melbourne' },
           ].map((o, i) => (
             <div key={i} className="flex gap-2.5 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-teal mt-1.5 flex-shrink-0" />
@@ -152,86 +182,141 @@ function AdSidebar() {
           ))}
         </div>
       </div>
-
     </aside>
   )
 }
 
-// ── Main page client ──────────────────────────────────────────────
-
-interface Props {
-  properties: SalePropertyCard[]
+// ── Mock data (API fallback) ───────────────────────────────────────────────
+const MOCK_RESULT: PaginatedProperties = {
+  page: 1, page_size: 25, total: 6, total_pages: 1,
+  items: [
+    {
+      property_id: 'mock-1', slug: '42-park-avenue-mosman', listingType: 'sale',
+      title: 'Modern Family Home', address: '42 Park Avenue, Mosman, Sydney NSW 2088',
+      suburb: 'Mosman', state: 'NSW', postcode: '2088', country: 'Australia',
+      beds: 4, baths: 3, cars: 2, land: '650 m²',
+      salePrice: '$1,250,000', salePriceRaw: 1250000, saleMethod: 'private_treaty',
+      auctionDate: null, openHome: 'Sat 15 Mar · 10:00–10:30 AM',
+      priceDisplay: '$1,250,000', priceSort: 1250000,
+      badge: { label: 'High Growth', color: 'green' }, aiMatch: 98,
+      aiInsight: 'North-facing rear with a large entertainer\'s deck and solar panels (6.6kW).',
+      images: ['https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=900&q=85'],
+      featured: true,
+      scores: { schools: 9.1, safety: 8.4, lifestyle: 9.0, growth: '+12.5%', growthPos: true },
+    } as SalePropertyCard,
+  ] as SalePropertyCard[],
 }
 
-export default function BuyPageClient({ properties }: Props) {
-  const searchParams = useSearchParams()
-  const { country }  = useI18n()
+// ── Main client component ─────────────────────────────────────────────────
+export default function BuyPageClient() {
+  const searchParams  = useSearchParams()
+  const router        = useRouter()
+  const { country: i18nCountry, countryReady } = useI18n()
 
-  const minPrice   = Number(searchParams.get('minPrice') || 0)
-  const maxPrice   = Number(searchParams.get('maxPrice') || 0)
-  const minBeds    = Number(searchParams.get('beds') || 0)
-  const typeFilter = searchParams.get('types')
-    ? searchParams.get('types')!.split(',').map(t => t.toLowerCase())
-    : []
+  // Derive filters from URL (source of truth)
+  const urlCountry  = searchParams.get('country') ?? ''
+  const minPrice    = Number(searchParams.get('minPrice')  || 0)
+  const maxPrice    = Number(searchParams.get('maxPrice')  || 0)
+  const minBeds     = Number(searchParams.get('beds')      || 0)
+  const urlPage     = Math.max(1, Number(searchParams.get('page') || 1))
+  const urlPageSize = (PAGE_SIZE_OPTIONS.includes(Number(searchParams.get('pageSize')) as PageSize)
+    ? Number(searchParams.get('pageSize'))
+    : 25) as PageSize
 
-  const filtered = useMemo(() => {
-    return properties.filter(p => {
-      if (minPrice && p.salePriceRaw < minPrice) return false
-      if (maxPrice && p.salePriceRaw > maxPrice) return false
-      if (minBeds  && p.beds < minBeds)           return false
-      if (typeFilter.length > 0) {
-        const haystack = [p.address, p.title, p.badge.label].join(' ').toLowerCase()
-        if (!typeFilter.some(t => haystack.includes(t))) return false
-      }
-      return true
+  // Once country is ready from i18n (IP or localStorage), sync it into URL if
+  // the URL doesn't already have a country — this is the single source of truth.
+  useEffect(() => {
+    if (!countryReady) return
+    if (!urlCountry && i18nCountry) {
+      const p = new URLSearchParams(searchParams.toString())
+      p.set('country', i18nCountry)
+      p.set('page', '1')
+      router.replace(`/buy?${p.toString()}`)
+    }
+  }, [countryReady, i18nCountry, urlCountry]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // The effective country to fetch with
+  const activeCountry = urlCountry || i18nCountry
+
+  // ── Data fetching ─────────────────────────────────────────────────────────
+  const [data,    setData]    = useState<PaginatedProperties | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error,   setError]   = useState<string | null>(null)
+
+  const fetchPage = useCallback(async () => {
+    if (!countryReady) return
+    setLoading(true)
+    setError(null)
+    try {
+      const result = await getProperties({
+        listingType: 'sale',
+        country:     activeCountry,
+        beds:        minBeds   || undefined,
+        min_price:   minPrice  || undefined,
+        max_price:   maxPrice  || undefined,
+        page:        urlPage,
+        page_size:   urlPageSize,
+      })
+      setData(result)
+    } catch (err) {
+      console.error('Property fetch failed:', err)
+      setData(MOCK_RESULT)
+      setError('Could not reach the API — showing sample data.')
+    } finally {
+      setLoading(false)
+    }
+  }, [activeCountry, minBeds, minPrice, maxPrice, urlPage, urlPageSize, countryReady])
+
+  useEffect(() => { fetchPage() }, [fetchPage])
+
+  // ── URL helpers ───────────────────────────────────────────────────────────
+  const pushParams = useCallback((updates: Record<string, string | number>) => {
+    const p = new URLSearchParams(searchParams.toString())
+    Object.entries(updates).forEach(([k, v]) => {
+      if (v !== '' && v !== 0) p.set(k, String(v)); else p.delete(k)
     })
-  }, [properties, minPrice, maxPrice, minBeds, typeFilter])
+    router.push(`/buy?${p.toString()}`)
+  }, [searchParams, router])
 
-  const anyFiltersActive = !!(minPrice || maxPrice || minBeds || typeFilter.length)
+  const handlePageChange     = (p: number)     => pushParams({ page: p })
+  const handlePageSizeChange = (s: PageSize)   => pushParams({ pageSize: s, page: 1 })
 
-  // Breadcrumb
+  // ── Breadcrumbs ───────────────────────────────────────────────────────────
+  const anyFiltersActive = !!(minPrice || maxPrice || minBeds)
   const breadcrumbs = useMemo(() => {
     const items: { label: string; href?: string }[] = [
       { label: 'Home', href: '/' },
       { label: 'Buy',  href: '/buy' },
-      { label: `Properties for Sale in ${country}` },
+      { label: `Properties for Sale in ${activeCountry}` },
     ]
     if (anyFiltersActive) {
       const parts: string[] = []
       if (minBeds) parts.push(`${minBeds}+ beds`)
-      if (minPrice || maxPrice) {
-        if (minPrice && maxPrice)
-          parts.push(`$${(minPrice / 1000).toFixed(0)}k – $${(maxPrice / 1000).toFixed(0)}k`)
-        else if (minPrice)
-          parts.push(`Over $${(minPrice / 1_000_000).toFixed(1)}M`)
-        else
-          parts.push(`Under $${(maxPrice / 1000).toFixed(0)}k`)
-      }
-      if (typeFilter.length) parts.push(typeFilter.join(', '))
+      if (minPrice && maxPrice) parts.push(`$${(minPrice/1000).toFixed(0)}k – $${(maxPrice/1000).toFixed(0)}k`)
+      else if (minPrice) parts.push(`Over $${(minPrice/1_000_000).toFixed(1)}M`)
+      else if (maxPrice) parts.push(`Under $${(maxPrice/1000).toFixed(0)}k`)
       if (parts.length) items.push({ label: parts.join(' · ') })
     }
     return items
-  }, [country, anyFiltersActive, minBeds, minPrice, maxPrice, typeFilter])
+  }, [activeCountry, anyFiltersActive, minBeds, minPrice, maxPrice])
+
+  const items   = data?.items ?? []
+  const total   = data?.total ?? 0
 
   return (
-    // Fill the viewport below the sticky navbar (56px)
-    <div
-      className="max-w-[1400px] mx-auto px-5 lg:px-8 flex flex-col"
-      style={{ height: 'calc(100vh - 56px)' }}
-    >
+    <div className="max-w-[1400px] mx-auto px-5 lg:px-8 flex flex-col py-2">
       {/* Breadcrumb */}
       <Breadcrumb items={breadcrumbs} />
 
       {/* Results header */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-3 flex-shrink-0">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-black text-ink tracking-tight">
-            Properties for sale <span className="text-teal">in {country}</span>
+            Properties for sale <span className="text-teal">in {activeCountry}</span>
           </h1>
-          <p className="text-sm text-muted mt-0.5">
-            {filtered.length} {filtered.length === 1 ? 'result' : 'results'}
-            {anyFiltersActive && ' · filters applied'}
-          </p>
+          {error && (
+            <p className="text-xs text-orange mt-0.5">⚠ {error}</p>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -246,11 +331,17 @@ export default function BuyPageClient({ properties }: Props) {
       </div>
 
       {/* Two-column body */}
-      <div className="flex gap-6 flex-1 min-h-0 pb-6">
-
-        {/* Virtual property list */}
-        <div className="flex-1 min-w-0 min-h-0">
-          {filtered.length === 0 ? (
+      <div className="flex gap-6">
+        {/* Property list */}
+        <div className="flex-1 min-w-0 flex flex-col gap-4">
+          {loading ? (
+            // Skeleton loader
+            <div className="flex flex-col gap-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-2xl bg-surface animate-pulse" style={{ height: 'clamp(280px, 48svh, 520px)' }} />
+              ))}
+            </div>
+          ) : items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 gap-4">
               <div className="w-16 h-16 rounded-2xl bg-surface flex items-center justify-center text-3xl">🏘</div>
               <p className="text-lg font-bold text-ink">No properties found</p>
@@ -259,7 +350,23 @@ export default function BuyPageClient({ properties }: Props) {
               </p>
             </div>
           ) : (
-            <VirtualPropertyList items={filtered} />
+            <>
+              {items.map(p => (
+                <PropertyListingCard key={p.property_id} property={p} />
+              ))}
+
+              {/* Pagination */}
+              {data && (
+                <PaginationBar
+                  page={data.page}
+                  totalPages={data.total_pages}
+                  total={total}
+                  pageSize={urlPageSize}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                />
+              )}
+            </>
           )}
         </div>
 

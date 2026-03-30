@@ -3,12 +3,17 @@ import Link from 'next/link'
 import Image from 'next/image'
 import type { AnyPropertyCard, BadgeColor, SalePropertyCard, RentPropertyCard } from '@/lib/types'
 
-// ── Constants ─────────────────────────────────────────────────────
-// Fixed card height used by both this component AND the virtualiser.
-// Export so BuyPageClient can import the same value.
-export const CARD_HEIGHT = 260 // px  (image = 60% = 156px)
-export const CARD_GAP    = 12  // px  (gap between cards)
+// ── Constants (kept for any legacy imports) ───────────────────────
+export const CARD_HEIGHT = 260
+export const CARD_GAP    = 12
 export const CARD_STRIDE = CARD_HEIGHT + CARD_GAP
+
+// Card sizing strategy:
+//  • Large screens (lg+): card fills ~48 % of viewport height so two cards
+//    are visible at once with some breathing room.
+//  • Small screens:       card fills ~82 % of viewport height so one card
+//    dominates and the next peeks below.
+// We achieve this with Tailwind's min-h + a CSS custom property trick.
 
 const BADGE_STYLES: Record<BadgeColor, string> = {
   green:  'bg-green  text-white',
@@ -202,10 +207,10 @@ export default function PropertyListingCard({ property: p }: { property: AnyProp
     <Link
       href={`/property/${p.slug}?id=${p.property_id}`}
       className="group flex bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
-      style={{ height: CARD_HEIGHT }}
+      style={{ height: 'clamp(280px, 48svh, 520px)' }}
     >
-      {/* ── Left: image (fixed 38% width) ─────────────────────── */}
-      <div className="relative flex-shrink-0 overflow-hidden" style={{ width: '38%' }}>
+      {/* ── Left: image (fixed 57% width) ─────────────────────── */}
+      <div className="relative flex-shrink-0 overflow-hidden" style={{ width: '57%' }}>
         <Image
           src={p.images[0]}
           alt={p.address}
