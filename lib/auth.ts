@@ -103,3 +103,25 @@ export function validatePasswordStrength(password: string): string[] {
   ]
   return rules.filter(([re]) => !re.test(password)).map(([, msg]) => msg)
 }
+
+// ── Saved Properties ───────────────────────────────────────────────
+export async function getSavedPropertyIds(accessToken: string): Promise<string[]> {
+  const data = await authFetch<{ saved_property_ids: string[] }>('/auth/saved-properties', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  return data.saved_property_ids
+}
+
+export async function saveProperty(accessToken: string, propertyId: string): Promise<void> {
+  await authFetch(`/auth/saved-properties/${propertyId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}
+
+export async function unsaveProperty(accessToken: string, propertyId: string): Promise<void> {
+  await authFetch(`/auth/saved-properties/${propertyId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+}

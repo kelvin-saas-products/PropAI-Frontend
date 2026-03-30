@@ -1,19 +1,16 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useState, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import type { AnyPropertyCard, BadgeColor, SalePropertyCard, RentPropertyCard } from '@/lib/types'
+import { useAuth } from '@/context/AuthContext'
+import { saveProperty, unsaveProperty } from '@/lib/auth'
 
-// ── Constants (kept for any legacy imports) ───────────────────────
+// ── Constants (kept for legacy imports) ──────────────────────────
 export const CARD_HEIGHT = 260
 export const CARD_GAP    = 12
 export const CARD_STRIDE = CARD_HEIGHT + CARD_GAP
-
-// Card sizing strategy:
-//  • Large screens (lg+): card fills ~48 % of viewport height so two cards
-//    are visible at once with some breathing room.
-//  • Small screens:       card fills ~82 % of viewport height so one card
-//    dominates and the next peeks below.
-// We achieve this with Tailwind's min-h + a CSS custom property trick.
 
 const BADGE_STYLES: Record<BadgeColor, string> = {
   green:  'bg-green  text-white',
@@ -27,6 +24,138 @@ function scoreColor(val: number) {
   return val >= 8.5 ? 'text-green' : 'text-orange'
 }
 
+// ── Login prompt dialog ──────────────────────────────────────────
+function LoginPromptDialog({ onClose, onGoLogin }: { onClose: () => void; onGoLogin: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: 'rgba(0,0,0,0.45)' }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-2xl shadow-float w-full max-w-sm p-6 flex flex-col gap-4 animate-fadeIn"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Icon */}
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mx-auto"
+          style={{ background: 'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)' }}
+        >
+          🔖
+        </div>
+
+        <div className="text-center">
+          <h2 className="text-lg font-black text-ink">Save this property</h2>
+          <p className="text-sm text-muted mt-1 leading-relaxed">
+            Sign in to save properties and access them from your dashboard anytime.
+          </p>
+        </div>
+
+        <button
+          onClick={onGoLogin}
+          className="w-full py-3 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 hover:shadow-glow"
+          style={{ background: 'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)' }}
+        >
+          Sign in to save
+        </button>
+
+        <div className="flex items-center gap-2 text-xs text-muted justify-center">
+          <span>No account?</span>
+          <button
+            onClick={() => { onClose(); }}
+            className="text-teal font-semibold hover:underline"
+            onClickCapture={() => { onClose(); setTimeout(() => window.location.href = '/auth/register', 50) }}
+          >
+            Join free →
+          </button>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center text-muted hover:text-ink hover:bg-surface transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Save heart button ─────────────────────────────────────────────
+interface SaveButtonProps {
+  propertyId: string
+  initialSaved?: boolean
+}
+
+function SaveButton({ propertyId, initialSaved = false }: SaveButtonProps) {
+  const { user, accessToken } = useAuth()
+  const router = useRouter()
+  const [saved,       setSaved]       = useState(initialSaved)
+  const [loading,     setLoading]     = useState(false)
+  const [showDialog,  setShowDialog]  = useState(false)
+
+  const handleClick = useCallback(async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!user || !accessToken) {
+      setShowDialog(true)
+      return
+    }
+
+    if (loading) return
+    setLoading(true)
+    try {
+      if (saved) {
+        await unsaveProperty(accessToken, propertyId)
+        setSaved(false)
+      } else {
+        await saveProperty(accessToken, propertyId)
+        setSaved(true)
+      }
+    } catch {
+      // silently ignore — optimistic update reverted
+    } finally {
+      setLoading(false)
+    }
+  }, [user, accessToken, saved, loading, propertyId])
+
+  return (
+    <>
+      <button
+        onClick={handleClick}
+        className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center shadow-float transition-all duration-200 ${
+          saved
+            ? 'bg-red-500 hover:bg-red-600 scale-110'
+            : 'bg-white hover:scale-110'
+        } ${loading ? 'opacity-60 cursor-wait' : ''}`}
+        aria-label={saved ? 'Unsave property' : 'Save property'}
+      >
+        <svg
+          className={`w-4 h-4 transition-colors ${saved ? 'text-white' : 'text-muted'}`}
+          fill={saved ? 'currentColor' : 'none'}
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          />
+        </svg>
+      </button>
+
+      {showDialog && (
+        <LoginPromptDialog
+          onClose={() => setShowDialog(false)}
+          onGoLogin={() => { setShowDialog(false); router.push('/auth/sign-in') }}
+        />
+      )}
+    </>
+  )
+}
+
 // ── Sale right panel ──────────────────────────────────────────────
 function SalePanel({ p }: { p: SalePropertyCard }) {
   const METHOD_LABEL: Record<string, string> = {
@@ -38,23 +167,14 @@ function SalePanel({ p }: { p: SalePropertyCard }) {
 
   return (
     <div className="flex flex-col justify-between h-full">
-      {/* Top: price + address */}
       <div>
         <div className="flex items-start justify-between gap-2 mb-1">
           <p className="text-xl font-black text-ink tracking-tight leading-tight">
             {p.priceDisplay}
           </p>
-          {/* AI match chip */}
-          <span
-            className="flex-shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full text-white"
-            style={{ background: 'linear-gradient(135deg,#20D3B3,#3B82F6)' }}
-          >
-            ✦ {p.aiMatch}% match
-          </span>
         </div>
         <p className="text-xs text-muted leading-snug mb-2">{p.address}</p>
 
-        {/* Features row */}
         <div className="flex items-center gap-4 text-xs text-ink mb-2">
           <span className="flex items-center gap-1 font-semibold">
             <svg className="w-3.5 h-3.5 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,7 +200,6 @@ function SalePanel({ p }: { p: SalePropertyCard }) {
           <span className="font-semibold text-muted">{p.land}</span>
         </div>
 
-        {/* AI Insight */}
         {p.aiInsight && (
           <p className="text-[11px] text-muted leading-relaxed line-clamp-2 mb-2">
             <span className="font-bold text-orange">✦ AI: </span>{p.aiInsight}
@@ -88,9 +207,7 @@ function SalePanel({ p }: { p: SalePropertyCard }) {
         )}
       </div>
 
-      {/* Bottom: scores + event chips */}
       <div>
-        {/* Auction / open home */}
         {(p.auctionDate || p.openHome) && (
           <div className="flex gap-1.5 mb-2 flex-wrap">
             {p.auctionDate && (
@@ -109,7 +226,6 @@ function SalePanel({ p }: { p: SalePropertyCard }) {
           </div>
         )}
 
-        {/* Score pills */}
         <div className="flex gap-1.5">
           {[
             { label: 'Schools',   val: p.scores.schools,   isNum: true },
@@ -139,12 +255,6 @@ function RentPanel({ p }: { p: RentPropertyCard }) {
       <div>
         <div className="flex items-start justify-between gap-2 mb-1">
           <p className="text-xl font-black text-ink tracking-tight">{p.priceDisplay}</p>
-          <span
-            className="flex-shrink-0 text-[11px] font-bold px-2 py-0.5 rounded-full text-white"
-            style={{ background: 'linear-gradient(135deg,#20D3B3,#3B82F6)' }}
-          >
-            ✦ {p.aiMatch}% match
-          </span>
         </div>
         <p className="text-xs text-muted leading-snug mb-2">{p.address}</p>
 
@@ -198,18 +308,21 @@ function RentPanel({ p }: { p: RentPropertyCard }) {
 }
 
 // ── Main card ─────────────────────────────────────────────────────
-export default function PropertyListingCard({ property: p }: { property: AnyPropertyCard }) {
+interface Props {
+  property: AnyPropertyCard
+  isSaved?: boolean
+}
+
+export default function PropertyListingCard({ property: p, isSaved = false }: Props) {
   const isRent = p.listingType === 'rent'
-  // Image height = 60% of CARD_HEIGHT
-  const imgH = Math.round(CARD_HEIGHT * 0.6) // 156px
 
   return (
     <Link
       href={`/property/${p.slug}?id=${p.property_id}`}
-      className="group flex bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
+      className="group relative flex bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
       style={{ height: 'clamp(280px, 48svh, 520px)' }}
     >
-      {/* ── Left: image (fixed 57% width) ─────────────────────── */}
+  {/* ── Left: image (fixed 57% width) ─────────────────────── */}
       <div className="relative flex-shrink-0 overflow-hidden" style={{ width: '57%' }}>
         <Image
           src={p.images[0]}
@@ -231,20 +344,11 @@ export default function PropertyListingCard({ property: p }: { property: AnyProp
           {p.badge.label}
         </span>
 
-        {/* Favourite */}
-        <button
-          onClick={e => e.preventDefault()}
-          className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-float hover:scale-110 transition-transform"
-          aria-label="Save property"
-        >
-          <svg className="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-          </svg>
-        </button>
+        {/* Save button — handles auth check + dialog */}
+        <SaveButton propertyId={p.property_id} initialSaved={isSaved} />
       </div>
 
-      {/* ── Right: details (remaining width) ──────────────────── */}
+      {/* ── Right: details ───────────────────────────────────── */}
       <div className="flex-1 min-w-0 p-4 overflow-hidden">
         {isRent
           ? <RentPanel  p={p as RentPropertyCard} />
