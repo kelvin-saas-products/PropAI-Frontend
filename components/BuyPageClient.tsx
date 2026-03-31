@@ -1,9 +1,9 @@
 'use client'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Link from 'next/link'
 import PropertyListingCard from './PropertyListingCard'
 import Breadcrumb from './Breadcrumb'
+import Footer from './Footer'
 import { getProperties } from '@/lib/api'
 import { getSavedPropertyIds } from '@/lib/auth'
 import type { PaginatedProperties } from '@/lib/api'
@@ -94,68 +94,6 @@ function PaginationBar({ page, totalPages, total, pageSize, onPageChange, onPage
 }
 
 // ── Footer ────────────────────────────────────────────────────────
-function BuyPageFooter() {
-  const year = new Date().getFullYear()
-  return (
-    <footer className="mt-16 border-t border-subtle bg-white">
-      <div className="max-w-[1400px] mx-auto px-5 lg:px-8 py-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-          {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <p className="text-lg font-black text-ink tracking-tight mb-2">Prop<span className="text-teal">.AI</span></p>
-            <p className="text-xs text-muted leading-relaxed max-w-[180px]">
-              AI-powered property search for Australia, Thailand and the Philippines.
-            </p>
-          </div>
-
-          {/* Browse */}
-          <div>
-            <p className="text-xs font-bold text-ink uppercase tracking-wider mb-3">Browse</p>
-            <ul className="space-y-2">
-              {[['Buy', '/buy'], ['Rent', '/rent'], ['New Homes', '/new-homes'], ['Sold', '/sold']].map(([label, href]) => (
-                <li key={label}>
-                  <Link href={href} className="text-xs text-muted hover:text-ink transition-colors">{label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <p className="text-xs font-bold text-ink uppercase tracking-wider mb-3">Company</p>
-            <ul className="space-y-2">
-              {[['About', '/about'], ['Careers', '/careers'], ['Press', '/press'], ['Contact', '/contact']].map(([label, href]) => (
-                <li key={label}>
-                  <Link href={href} className="text-xs text-muted hover:text-ink transition-colors">{label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <p className="text-xs font-bold text-ink uppercase tracking-wider mb-3">Legal</p>
-            <ul className="space-y-2">
-              {[['Privacy Policy', '/privacy'], ['Terms of Use', '/terms'], ['Cookie Policy', '/cookies']].map(([label, href]) => (
-                <li key={label}>
-                  <Link href={href} className="text-xs text-muted hover:text-ink transition-colors">{label}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-subtle">
-          <p className="text-xs text-muted">© {year} Prop.AI. All rights reserved.</p>
-          <p className="text-xs text-muted">
-            Listings are for informational purposes only. Always verify details with the listing agent.
-          </p>
-        </div>
-      </div>
-    </footer>
-  )
-}
-
 // ── Ad sidebar ────────────────────────────────────────────────────
 function AdSidebar() {
   return (
@@ -435,7 +373,7 @@ export default function BuyPageClient() {
       </div>
 
       {/* ── Footer ───────────────────────────────────────────── */}
-      <BuyPageFooter />
+      <Footer />
     </div>
   )
 }
