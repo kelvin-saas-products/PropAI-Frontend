@@ -31,7 +31,7 @@ export default function Navbar() {
         {/* Nav links */}
         <nav className="hidden md:flex items-center gap-7">
           {['Buy','Rent','Sold','New Homes','Find Agents','Loans'].map(item => (
-            <Link key={item} href={item === 'Buy' ? '/buy' : '#'} className="text-sm text-muted hover:text-ink font-medium transition-colors">{t(item)}</Link>
+            <Link key={item} href={item === 'Find Agents' ? '/findagents' : item === 'New Homes' ? '/newhomes' : `/${item.toLowerCase()}`} className="text-sm text-muted hover:text-ink font-medium transition-colors">{t(item)}</Link>
           ))}
         </nav>
 
