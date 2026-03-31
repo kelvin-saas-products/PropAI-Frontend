@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AnyPropertyCard, BadgeColor, SalePropertyCard, RentPropertyCard } from '@/lib/types'
 import { useAuth } from '@/context/AuthContext'
@@ -83,7 +83,247 @@ function LoginPromptDialog({ onClose, onGoLogin }: { onClose: () => void; onGoLo
   )
 }
 
-// ── Save heart button ─────────────────────────────────────────────
+// ── Image carousel ────────────────────────────────────────────────
+interface CarouselProps {
+  images: string[]
+  address: string
+  listingType: 'sale' | 'rent'
+  badgeLabel: string
+  badgeColor: BadgeColor
+  propertyId: string
+  isSaved: boolean
+}
+
+function ImageCarousel({ images, address, listingType, badgeLabel, badgeColor, propertyId, isSaved }: CarouselProps) {
+  const total  = images.length
+  const isRent = listingType === 'rent'
+
+  // Committed slide index — drives dot rendering
+  const [index, setIndex] = useState(0)
+  // Live fractional index during scrub/swipe — drives dot morph without re-rendering strip
+  const [liveIndex, setLiveIndex] = useState<number | null>(null)
+
+  const stripRef    = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const dotBarRef   = useRef<HTMLDivElement>(null)
+
+  // Swipe state (image area)
+  const swipeStartX   = useRef(0)
+  const swipeStartIdx = useRef(0)
+  const isSwiping     = useRef(false)
+  const swipeMoved    = useRef(false) // true once finger moved >6px — used to block link click
+
+  // Dot-scrub state
+  const dotDragStartX   = useRef(0)
+  const dotDragBaseIdx  = useRef(0)
+  const isDotDragging   = useRef(false)
+
+  // ── Imperative translate (no React re-render on every frame) ────
+  const translateTo = useCallback((fractional: number, animate = false) => {
+    const el = stripRef.current
+    if (!el) return
+    const clamped = Math.max(0, Math.min(total - 1, fractional))
+    // Strip is total*containerWidth wide; shift by (clamped * containerWidth)
+    // expressed as a percentage of the strip: (clamped / total) * 100%
+    el.style.transition = animate ? 'transform 0.28s cubic-bezier(0.4,0,0.2,1)' : 'none'
+    el.style.transform  = `translateX(-${(clamped / total) * 100}%)`
+  }, [total])
+
+  const commitIndex = useCallback((raw: number) => {
+    const snapped = Math.max(0, Math.min(total - 1, Math.round(raw)))
+    setIndex(snapped)
+    setLiveIndex(null)
+    translateTo(snapped, true)
+  }, [total, translateTo])
+
+  // ── Image-area swipe ────────────────────────────────────────────
+  const onImgPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (total <= 1) return
+    swipeStartX.current   = e.clientX
+    swipeStartIdx.current = index
+    isSwiping.current     = true
+    swipeMoved.current    = false
+    translateTo(index) // lock off animation for live drag
+    ;(e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId)
+  }
+
+  const onImgPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isSwiping.current || total <= 1) return
+    const delta = e.clientX - swipeStartX.current
+    if (Math.abs(delta) > 6) swipeMoved.current = true
+    if (!swipeMoved.current) return
+    // Container width — use containerRef so we measure the visible panel, not the full strip
+    const containerW = containerRef.current?.getBoundingClientRect().width ?? 1
+    const raw = swipeStartIdx.current - delta / containerW
+    setLiveIndex(Math.max(0, Math.min(total - 1, raw)))
+    translateTo(raw)
+  }
+
+  const onImgPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isSwiping.current) return
+    isSwiping.current = false
+    if (!swipeMoved.current) return
+    // Block the subsequent click event so the Link doesn't navigate
+    e.currentTarget.addEventListener('click', ev => ev.preventDefault(), { once: true })
+    const delta      = e.clientX - swipeStartX.current
+    const containerW = containerRef.current?.getBoundingClientRect().width ?? 1
+    const raw        = swipeStartIdx.current - delta / containerW
+    commitIndex(raw)
+    swipeMoved.current = false
+  }
+
+  // ── Dot-bar scrub ───────────────────────────────────────────────
+  const onDotBarPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (total <= 1) return
+    e.preventDefault(); e.stopPropagation()
+    dotDragStartX.current  = e.clientX
+    dotDragBaseIdx.current = index
+    isDotDragging.current  = true
+    translateTo(index) // disable animation for live scrub
+    ;(e.currentTarget as HTMLDivElement).setPointerCapture(e.pointerId)
+  }
+
+  const onDotBarPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDotDragging.current || total <= 1) return
+    e.preventDefault(); e.stopPropagation()
+    const barW  = dotBarRef.current?.getBoundingClientRect().width ?? 60
+    const delta = e.clientX - dotDragStartX.current
+    // Map bar width → full slide range
+    const raw   = dotDragBaseIdx.current + (delta / barW) * (total - 1)
+    const clamped = Math.max(0, Math.min(total - 1, raw))
+    setLiveIndex(clamped)
+    translateTo(clamped)
+  }
+
+  const onDotBarPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDotDragging.current) return
+    e.preventDefault(); e.stopPropagation()
+    isDotDragging.current = false
+    const barW  = dotBarRef.current?.getBoundingClientRect().width ?? 60
+    const delta = e.clientX - dotDragStartX.current
+    const raw   = dotDragBaseIdx.current + (delta / barW) * (total - 1)
+    commitIndex(raw)
+  }
+
+  // Dot tap — navigate directly to that slide
+  const onDotClick = (e: React.MouseEvent, i: number) => {
+    e.preventDefault(); e.stopPropagation()
+    // Only treat as a tap if we weren't scrubbing
+    if (isDotDragging.current) return
+    commitIndex(i)
+  }
+
+  const displayIndex = liveIndex ?? index
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative flex-shrink-0 overflow-hidden select-none"
+      style={{ width: '57%', height: '100%' }}
+    >
+      {/* ── Sliding strip ──────────────────────────────────── */}
+      <div
+        ref={stripRef}
+        className="absolute inset-0 flex"
+        style={{ width: `${total * 100}%`, willChange: 'transform' }}
+        onPointerDown={onImgPointerDown}
+        onPointerMove={onImgPointerMove}
+        onPointerUp={onImgPointerUp}
+      >
+        {images.map((src, i) => (
+          <div
+            key={src}
+            className="relative flex-shrink-0"
+            style={{ width: `${100 / total}%`, height: '100%' }}
+          >
+            <Image
+              src={src}
+              alt={`${address} — photo ${i + 1}`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1200px) 40vw, 28vw"
+              priority={i === 0}
+              draggable={false}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Overlays ──────────────────────────────────────── */}
+
+      {/* Listing type pill */}
+      <span className={`absolute top-3 left-3 z-10 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm pointer-events-none ${
+        isRent ? 'bg-ink text-white' : 'bg-white text-ink border border-subtle'
+      }`}>
+        {isRent ? '🔑 FOR RENT' : '🏷 FOR SALE'}
+      </span>
+
+      {/* Badge */}
+      <span className={`absolute left-3 z-10 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm pointer-events-none ${BADGE_STYLES[badgeColor]}`}
+        style={{ bottom: '15px' }}>
+        {badgeLabel}
+      </span>
+
+      {/* Save button */}
+      <SaveButton propertyId={propertyId} initialSaved={isSaved} />
+
+      {/* ── Dot scrubber ───────────────────────────────────── */}
+      {total > 1 && (
+        <>
+          {/* Tight scrim — sits only behind the dot row */}
+          <div
+            className="absolute left-1/2 -translate-x-1/2 pointer-events-none z-[9] rounded-full"
+            style={{
+              bottom: '21px',
+              height: '13px',
+              width: `${images.length * 16 + 16}px`,
+              background: 'rgba(0,0,0,0.25)',
+              filter: 'blur(4px)',
+            }}
+          />
+          {/* Dot bar — centered horizontally at bottom */}
+          <div
+            ref={dotBarRef}
+            className="absolute left-0 right-0 z-10 flex justify-center items-center gap-[5px] cursor-grab active:cursor-grabbing touch-none"
+            style={{ bottom: '25px' }}
+            onPointerDown={onDotBarPointerDown}
+            onPointerMove={onDotBarPointerMove}
+            onPointerUp={onDotBarPointerUp}
+          >
+            {images.map((_, i) => {
+              const dist    = Math.abs(displayIndex - i)
+              const active  = dist < 0.5
+              const near    = dist < 1.5
+              const w       = active ? 18 : near ? 7 : 5
+              const opacity = active ? 1 : near ? 0.65 : 0.4
+
+              return (
+                <button
+                  key={i}
+                  onClick={e => onDotClick(e, i)}
+                  style={{
+                    width:        w,
+                    height:       5,
+                    opacity,
+                    borderRadius: 9999,
+                    background:   'white',
+                    flexShrink:   0,
+                    border:       'none',
+                    padding:      0,
+                    cursor:       'inherit',
+                    transition:   'width 0.12s ease, opacity 0.12s ease',
+                  }}
+                  aria-label={`Photo ${i + 1}`}
+                />
+              )
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 interface SaveButtonProps {
   propertyId: string
   initialSaved?: boolean
@@ -315,46 +555,34 @@ interface Props {
 
 export default function PropertyListingCard({ property: p, isSaved = false }: Props) {
   const isRent = p.listingType === 'rent'
+  const href   = `/property/${p.slug}?id=${p.property_id}`
 
   return (
-    <Link
-      href={`/property/${p.slug}?id=${p.property_id}`}
+    <div
       className="group relative flex bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-card-hover transition-shadow duration-300"
       style={{ height: 'clamp(280px, 48svh, 520px)' }}
     >
-  {/* ── Left: image (fixed 57% width) ─────────────────────── */}
-      <div className="relative flex-shrink-0 overflow-hidden" style={{ width: '57%' }}>
-        <Image
-          src={p.images[0]}
-          alt={p.address}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-          sizes="(max-width: 1200px) 40vw, 28vw"
-        />
+      {/* ── Left: image carousel (no navigation) ─────────────── */}
+      <ImageCarousel
+        images={p.images}
+        address={p.address}
+        listingType={p.listingType}
+        badgeLabel={p.badge.label}
+        badgeColor={p.badge.color}
+        propertyId={p.property_id}
+        isSaved={isSaved}
+      />
 
-        {/* Listing type pill */}
-        <span className={`absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm ${
-          isRent ? 'bg-ink text-white' : 'bg-white text-ink border border-subtle'
-        }`}>
-          {isRent ? '🔑 FOR RENT' : '🏷 FOR SALE'}
-        </span>
-
-        {/* Badge */}
-        <span className={`absolute bottom-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm ${BADGE_STYLES[p.badge.color]}`}>
-          {p.badge.label}
-        </span>
-
-        {/* Save button — handles auth check + dialog */}
-        <SaveButton propertyId={p.property_id} initialSaved={isSaved} />
-      </div>
-
-      {/* ── Right: details ───────────────────────────────────── */}
-      <div className="flex-1 min-w-0 p-4 overflow-hidden">
+      {/* ── Right: details (click navigates) ─────────────────── */}
+      <Link
+        href={href}
+        className="flex-1 min-w-0 p-4 overflow-hidden block"
+      >
         {isRent
           ? <RentPanel  p={p as RentPropertyCard} />
           : <SalePanel  p={p as SalePropertyCard} />
         }
-      </div>
-    </Link>
+      </Link>
+    </div>
   )
 }
