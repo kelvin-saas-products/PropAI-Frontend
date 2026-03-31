@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import BuyNavbar from '@/components/BuyNavbar'
+import ListingsNavbar from '@/components/ListingsNavbar'
 import BuyPageClient from '@/components/BuyPageClient'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +19,7 @@ export default function BuyPage() {
   return (
     <div className="min-h-screen bg-bg">
       <Suspense>
-        <BuyNavbar />
+        <ListingsNavbar listingType="buy" />
       </Suspense>
       <Suspense>
         <BuyPageClient />

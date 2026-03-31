@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import RentNavbar from '@/components/RentNavbar'
+import ListingsNavbar from '@/components/ListingsNavbar'
 import RentPageClient from '@/components/RentPageClient'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +19,7 @@ export default function RentPage() {
   return (
     <div className="min-h-screen bg-bg">
       <Suspense>
-        <RentNavbar />
+        <ListingsNavbar listingType="rent" />
       </Suspense>
       <Suspense>
         <RentPageClient />
