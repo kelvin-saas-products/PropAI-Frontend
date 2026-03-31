@@ -25,7 +25,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white border-b border-subtle">
       <div className="max-w-7xl mx-auto px-5 lg:px-8 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center">
-          <Image src="/logo.svg" alt="Prop.AI" width={120} height={35} priority/>
+          <Image src="/logo.svg" alt="Prop.AI" width={180} height={53} priority/>
         </Link>
 
         {/* Nav links */}
