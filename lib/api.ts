@@ -73,6 +73,7 @@ export function getProperties(filters: PropertyFilters): Promise<PaginatedProper
   if (filters.max_price)     params.set('max_price',       String(filters.max_price))
   if (filters.max_weekly_rent) params.set('max_weekly_rent', String(filters.max_weekly_rent))
   if (filters.sort_by)       params.set('sort_by',        filters.sort_by)
+  params.set('page', String(filters.page ?? 1))
   params.set('page_size', String(filters.page_size ?? 25))
 
   return apiFetch<PaginatedProperties>(`/properties?${params.toString()}`, { cache: 'no-store' })
