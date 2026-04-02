@@ -20,7 +20,7 @@ export default function PaginationBar({
   total,
   pageSize,
   onPageChange,
-  onPageSizeChange,
+  onPageSizeChange
 }: PaginationBarProps) {
   const pages = useMemo(() => {
     if (totalPages <= 7) return Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -40,11 +40,11 @@ export default function PaginationBar({
   const btn = 'h-9 min-w-[36px] px-2 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center'
 
   return (
-    <div className="flex items-center justify-between flex-wrap gap-3 pt-5 border-t border-subtle mt-2">
+    <div className="flex items-center justify-between flex-wrap gap-3 pt-5 border-t border-subtle mt-2" style={{ padding: '20px 0 0', marginTop: '20px' }}>
       {/* Left: result count + page size */}
       <div className="flex items-center gap-3">
         <span className="text-sm text-muted">
-          {total.toLocaleString()} {total === 1 ? 'result' : 'results'}
+          Showing {page} - {page * pageSize > total ? total : page * pageSize} of {total} properties
         </span>
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted">Show</span>
