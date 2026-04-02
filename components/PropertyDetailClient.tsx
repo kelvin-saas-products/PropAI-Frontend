@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
 import type { AnyProperty, BadgeColor, SaleProperty, RentProperty } from '@/lib/types'
 import ListingsNavbar from './ListingsNavbar'
+import Footer from './Footer'
 import Breadcrumb from './Breadcrumb'
 import PropertyHeroGallery from './PropertyHeroGallery'
 
@@ -528,7 +529,7 @@ export default function PropertyDetailClient({ property }: { property: AnyProper
   ]
 
   return (
-    <div className="min-h-screen bg-[#f5f4f1]">
+    <div className="min-h-screen bg-bg">
       <ListingsNavbar listingType={listingPageType} />
 
       <div className="max-w-[1400px] mx-auto px-5 lg:px-8">
@@ -730,6 +731,7 @@ export default function PropertyDetailClient({ property }: { property: AnyProper
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   )
 }
