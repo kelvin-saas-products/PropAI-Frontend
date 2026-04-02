@@ -473,7 +473,8 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
           <h2 className="text-base font-black text-ink">Filters</h2>
           <div className="flex items-center gap-3">
             <button onClick={handleReset}
-              className="text-sm font-semibold text-muted hover:text-ink transition-colors">
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold border border-subtle text-ink hover:bg-surface transition-colors"
+              style={{ width: '200px'}}>
               Reset
             </button>
             <button onClick={onClose} aria-label="Close filters"
