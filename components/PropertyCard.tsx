@@ -105,6 +105,7 @@ export default function PropertyCard({ property: p }: { property: AnyPropertyCar
           src={p.images[0]} alt={p.address} fill
           className="object-cover group-hover:scale-105 transition-transform duration-500"
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          unoptimized
         />
         {/* Listing type pill */}
         <span className={`absolute top-3 left-3 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm ${

@@ -8,6 +8,7 @@ import PaginationBar, { PAGE_SIZE_OPTIONS, type PageSize } from './PaginationBar
 import { getProperties } from '@/lib/api'
 import { getSavedPropertyIds } from '@/lib/auth'
 import type { PaginatedProperties } from '@/lib/api'
+import type { SalePropertyCard } from '@/lib/types'
 import { useI18n } from '@/lib/i18n'
 import { useAuth } from '@/context/AuthContext'
 
