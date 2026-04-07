@@ -65,6 +65,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             sessionStorage.removeItem(TOKEN_KEY)
           }
         }
+      } else {
+        try {
+          const res = await refreshAccessToken()
+          setUser(res.user)
+          setAccessToken(res.access_token)
+          sessionStorage.setItem(TOKEN_KEY, res.access_token)
+          scheduleRefresh(res.expires_in)
+        } catch {
+          sessionStorage.removeItem(TOKEN_KEY)
+        }
       }
       setLoading(false)
     }

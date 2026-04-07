@@ -8,6 +8,19 @@ export type Language = 'en' | 'th'
 const SUPPORTED_COUNTRIES: Country[] = ['Australia', 'Thailand', 'Philippines']
 const STORAGE_KEY = 'propai_country'
 
+function readCountryFromUrl(): Country | null {
+  if (typeof window === 'undefined') return null
+
+  const params = new URLSearchParams(window.location.search)
+  const country = params.get('country')
+
+  if (country && SUPPORTED_COUNTRIES.includes(country as Country)) {
+    return country as Country
+  }
+
+  return null
+}
+
 interface I18nContextProps {
   country: Country
   setCountry: (c: Country) => void
