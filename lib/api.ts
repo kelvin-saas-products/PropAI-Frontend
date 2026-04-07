@@ -24,6 +24,7 @@ export interface PropertyFilters {
   beds?: number
   min_price?: number
   max_price?: number
+  min_weekly_rent?: number
   max_weekly_rent?: number
   sort_by?: 'newest' | 'price_asc' | 'price_desc'
   page?: number
@@ -71,6 +72,7 @@ export function getProperties(filters: PropertyFilters): Promise<PaginatedProper
   if (filters.beds)          params.set('beds',            String(filters.beds))
   if (filters.min_price)     params.set('min_price',       String(filters.min_price))
   if (filters.max_price)     params.set('max_price',       String(filters.max_price))
+  if (filters.min_weekly_rent) params.set('min_weekly_rent', String(filters.min_weekly_rent))
   if (filters.max_weekly_rent) params.set('max_weekly_rent', String(filters.max_weekly_rent))
   if (filters.sort_by)       params.set('sort_by',        filters.sort_by)
   params.set('page', String(filters.page ?? 1))

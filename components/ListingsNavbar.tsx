@@ -33,12 +33,12 @@ const SALE_PRICE_STOPS: PriceStop[] = [
 
 const RENT_PRICE_STOPS: PriceStop[] = [
   { value: 0,     label: 'Any'    },
-  { value: 300,   label: '$300'   },
+  { value: 250,   label: '$250'   },
   { value: 500,   label: '$500'   },
-  { value: 800,   label: '$800'   },
-  { value: 1_200, label: '$1.2k'  },
-  { value: 2_000, label: '$2k'    },
-  { value: 3_500, label: '$3.5k+' },
+  { value: 750,   label: '$750'   },
+  { value: 1_000, label: '$1k'  },  
+  { value: 2_500, label: '$2.5k+' },
+  { value: 5_000, label: '$5k+' },  
 ]
 
 // ─────────────────────────────────────────────────────────────────
@@ -551,7 +551,7 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 6v2m0 8v2M9 12h6" />
               </svg>
               <p className="text-sm font-bold text-ink">
-                {listingType === 'rent' ? 'Weekly Rent' : 'Price'}
+                {listingType === 'rent' ? 'Weekly Rent Inputs' : 'Price Inputs'}
               </p>
             </div>
             <PriceSlider
@@ -794,7 +794,7 @@ export default function ListingsNavbar({ listingType }: Props) {
           {/* Price */}
           <FilterDropdown label={priceLabel} active={priceActive} width="w-72">
             <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">
-              {listingType === 'rent' ? 'Weekly rent' : 'Price range'}
+              {listingType === 'rent' ? 'Weekly rent inputs' : 'Price inputs'}
             </p>
             <PriceSlider
               stops={priceStops}

@@ -14,6 +14,7 @@ import type { RentPropertyCard } from '@/lib/types'
 import { useI18n } from '@/lib/i18n'
 import { useAuth } from '@/context/AuthContext'
 import { getListingCardStyleVars, useListingViewportLayout } from '@/lib/listings-layout'
+import { filterRentItemsByPrice } from '@/lib/rent-price-filter'
 
 type SortKey = 'price_asc' | 'price_desc' | 'newest'
 const SORT_OPTIONS: { value: SortKey; label: string }[] = [
@@ -40,43 +41,6 @@ function AdSidebar() {
       </div>
     </aside>
   )
-}
-
-const MOCK_RENT_CARD: RentPropertyCard = {
-  property_id: 'mock-rent-1',
-  slug: '12-king-street-newtown',
-  listingType: 'rent',
-  title: 'Stylish Inner-City Apartment',
-  address: '12 King Street, Newtown, Sydney NSW 2042',
-  suburb: 'Newtown',
-  state: 'NSW',
-  postcode: '2042',
-  country: 'Australia',
-  beds: 2,
-  baths: 1,
-  cars: 1,
-  land: '',
-  weeklyRent: '$650/wk',
-  weeklyRentRaw: 650,
-  availableFrom: '2025-02-01',
-  furnished: false,
-  petsAllowed: null,
-  badge: { label: 'New listing', color: 'teal' },
-  aiMatch: 87,
-  aiInsight: 'Great value in a highly walkable suburb with excellent transport links.',
-  images: [],
-  featured: false,
-  priceDisplay: '$650/wk',
-  priceSort: 650,
-  scores: { schools: 78, safety: 72, lifestyle: 92, valueForMoney: 85 },
-}
-
-const MOCK_RESULT: PaginatedProperties = {
-  page: 1,
-  page_size: 25,
-  total: 1,
-  total_pages: 1,
-  items: [MOCK_RENT_CARD],
 }
 
 export default function RentPageClient() {
@@ -139,8 +103,8 @@ export default function RentPageClient() {
           listingType: 'rent',
           country: activeCountry,
           beds: minBeds || undefined,
-          min_price: minPrice || undefined,
-          max_price: maxPrice || undefined,
+          min_weekly_rent: minPrice || undefined,
+          max_weekly_rent: maxPrice || undefined,
           sort_by: urlSort,
           page: pageToFetch,
           page_size: urlPageSize,
@@ -155,9 +119,9 @@ export default function RentPageClient() {
         })
       } catch (err) {
         console.error('Rent fetch failed:', err)
-        setData(MOCK_RESULT)
-        setFeedItems(MOCK_RESULT.items as RentPropertyCard[])
-        setError('Could not reach the API — showing sample data.')
+        setData(null)
+        setFeedItems([])
+        setError('Could not reach the API.')
       } finally {
         if (append) setLoadingMore(false)
         else setLoading(false)
@@ -187,7 +151,13 @@ export default function RentPageClient() {
   const handlePageSizeChange = (pageSize: PageSize) => pushParams({ pageSize, page: 1 })
   const handleSortChange = (sort: SortKey) => pushParams({ sort, page: 1 })
 
-  const items = layout.usesVirtualScroll ? feedItems : ((data?.items ?? []) as RentPropertyCard[])
+  const items = useMemo(
+    () => {
+      const sourceItems = layout.usesVirtualScroll ? feedItems : ((data?.items ?? []) as RentPropertyCard[])
+      return filterRentItemsByPrice(sourceItems, minPrice, maxPrice)
+    },
+    [data?.items, feedItems, layout.usesVirtualScroll, minPrice, maxPrice]
+  )
 
   const handleLoadMore = useCallback(() => {
     if (!layout.usesVirtualScroll || !data || loading || loadingMore) return
@@ -328,3 +298,4 @@ export default function RentPageClient() {
     </div>
   )
 }
+
