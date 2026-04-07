@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:unit": "node --test --experimental-strip-types tests/rent-price-filter.test.ts"
+    "test:unit": "node --test --experimental-strip-types tests/rent-price-filter.test.ts tests/price-stop-sync.test.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

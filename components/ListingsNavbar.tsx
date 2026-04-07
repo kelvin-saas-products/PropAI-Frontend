@@ -6,6 +6,7 @@ import { createPortal } from 'react-dom'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useI18n, Country } from '@/lib/i18n'
+import { valueToMinStopIdx, valueToMaxStopIdx } from '@/lib/price-stop-utils'
 
 // ─────────────────────────────────────────────────────────────────
 // Types
@@ -367,26 +368,9 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
     }
   }, [open, updatePosition])
 
-
-  // Helpers: convert URL string ↔ stop index
-  function urlToMinIdx(raw: string) {
-    const val = Number(raw)
-    if (!val) return 0
-    const i = priceStops.findIndex(s => s.value >= val)
-    return i === -1 ? 0 : i
-  }
-  function urlToMaxIdx(raw: string) {
-    const val = Number(raw)
-    if (!val) return lastIdx
-    for (let i = lastIdx; i >= 0; i--) {
-      if (priceStops[i].value <= val) return i
-    }
-    return lastIdx
-  }
-
   // Draft state — nothing applied until "Apply" is pressed
-  const [draftMinIdx,   setDraftMinIdx]   = useState(() => urlToMinIdx(searchParams.get('minPrice') || ''))
-  const [draftMaxIdx,   setDraftMaxIdx]   = useState(() => urlToMaxIdx(searchParams.get('maxPrice') || ''))
+  const [draftMinIdx,   setDraftMinIdx]   = useState(() => valueToMinStopIdx(priceStops, searchParams.get('minPrice') || ''))
+  const [draftMaxIdx,   setDraftMaxIdx]   = useState(() => valueToMaxStopIdx(priceStops, searchParams.get('maxPrice') || ''))
   const [draftBeds,     setDraftBeds]     = useState<string>(
     () => normalizeBedValue(searchParams.get('beds') || '')
   )
@@ -401,12 +385,12 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
   // Re-sync draft whenever panel opens
   useEffect(() => {
     if (!open) return
-    setDraftMinIdx(urlToMinIdx(searchParams.get('minPrice') || ''))
-    setDraftMaxIdx(urlToMaxIdx(searchParams.get('maxPrice') || ''))
+    setDraftMinIdx(valueToMinStopIdx(priceStops, searchParams.get('minPrice') || ''))
+    setDraftMaxIdx(valueToMaxStopIdx(priceStops, searchParams.get('maxPrice') || ''))
     setDraftBeds(normalizeBedValue(searchParams.get('beds') || ''))
     setDraftBedsMode(normalizeBedsMatch(searchParams.get('bedsMatch')))
     setDraftTypes(searchParams.get('types') ? searchParams.get('types')!.split(',') : [])
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open, priceStops, searchParams])
 
   function selectBed(val: string) {
     setDraftBeds(val)
@@ -822,20 +806,8 @@ export default function ListingsNavbar({ listingType }: Props) {
             </p>
             <PriceSlider
               stops={priceStops}
-              minIdx={(() => {
-                const v = Number(currentMinPrice)
-                if (!v) return 0
-                const i = priceStops.findIndex(s => s.value >= v)
-                return i === -1 ? 0 : i
-              })()}
-              maxIdx={(() => {
-                const v = Number(currentMaxPrice)
-                if (!v) return priceStops.length - 1
-                for (let i = priceStops.length - 1; i >= 0; i--) {
-                  if (priceStops[i].value <= v) return i
-                }
-                return priceStops.length - 1
-              })()}
+              minIdx={valueToMinStopIdx(priceStops, currentMinPrice)}
+              maxIdx={valueToMaxStopIdx(priceStops, currentMaxPrice)}
               onMinIdx={idx => pushFilter({ minPrice: idx === 0 ? '' : String(priceStops[idx].value) })}
               onMaxIdx={idx => pushFilter({ maxPrice: idx === priceStops.length - 1 ? '' : String(priceStops[idx].value) })}
             />
@@ -923,3 +895,4 @@ export default function ListingsNavbar({ listingType }: Props) {
     </>
   )
 }
+
