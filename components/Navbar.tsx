@@ -6,6 +6,15 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useI18n, Country } from '@/lib/i18n'
 
+const MOBILE_NAV_ITEMS = [
+  { label: 'Buy', href: '/buy' },
+  { label: 'Rent', href: '/rent' },
+  { label: 'Sold', href: '/sold' },
+  { label: 'New Homes', href: '/newhomes' },
+  { label: 'Find Agents', href: '/findagents' },
+  { label: 'Loans', href: '/loans' },
+]
+
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -145,20 +154,28 @@ export default function Navbar() {
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden bg-white border-t border-subtle px-5 py-4 space-y-3">
-          {['Buy','Rent','Sold','New Homes','Find Agents','Loans'].map(item => (
-            <Link key={item} href="#" className="block text-sm text-muted font-medium">{item}</Link>
+          {MOBILE_NAV_ITEMS.map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className="block text-sm text-muted font-medium hover:text-ink transition-colors"
+            >
+              {t(item.label)}
+            </Link>
           ))}
           <div className="border-t border-subtle pt-3 space-y-2">
             {user ? (
               <>
                 <p className="text-xs text-muted">Signed in as <strong>{user.email}</strong></p>
-                <Link href="/dashboard" className="block text-sm font-medium text-ink">My dashboard</Link>
+                <Link href="/dashboard" onClick={() => setOpen(false)} className="block text-sm font-medium text-ink">My dashboard</Link>
                 <button onClick={handleLogout} className="block text-sm font-medium text-red-500">Sign out</button>
               </>
             ) : (
               <>
-                <Link href="/auth/sign-in" className="block text-sm font-semibold text-ink">Sign in</Link>
+                <Link href="/auth/sign-in" onClick={() => setOpen(false)} className="block text-sm font-semibold text-ink">Sign in</Link>
                 <Link href="/auth/register"
+                  onClick={() => setOpen(false)}
                   className="block text-white text-sm font-semibold px-4 py-2.5 rounded-xl text-center"
                   style={{ background: 'linear-gradient(135deg,#20D3B3,#3B82F6,#8B5CF6)' }}>
                   Join free
@@ -189,11 +206,6 @@ export default function Navbar() {
                </div>
              )}
            </div>
-
-          {['Buy','Rent','Sold','New Homes','Find Agents','Loans','Sign In'].map(item => (
-            <Link key={item} href="#" className="block text-sm text-muted font-medium">{t(item)}</Link>
-          ))}
-          <Link href="#" className="block bg-ink text-white text-sm font-semibold px-4 py-2.5 rounded-lg text-center">{t('Join')}</Link>
         </div>
       )}
     </header>
