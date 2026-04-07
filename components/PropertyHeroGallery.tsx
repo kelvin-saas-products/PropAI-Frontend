@@ -172,6 +172,8 @@ function FullscreenGalleryDialog({
 
   const goPrev = () => setIndex(current => (current - 1 + images.length) % images.length)
   const goNext = () => setIndex(current => (current + 1) % images.length)
+  const carouselButtonClass =
+    'absolute top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/30 text-white/85 backdrop-blur transition-colors hover:bg-black/45 hover:text-white lg:h-14 lg:w-14'
 
   const beginSwipe = (clientX: number) => {
     startX.current = clientX
@@ -245,13 +247,38 @@ function FullscreenGalleryDialog({
 
         <div className="flex min-h-0 flex-1">
           <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden px-4 py-4 lg:px-8 lg:py-8">
-            {isDesktop && images.length > 1 && (
+            {images.length > 1 && (
               <>
                 <button type="button" onClick={goPrev} className="absolute left-3 top-1/2 z-10 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-4xl text-white/80 backdrop-blur hover:bg-black/40 lg:flex">
                   ‹
                 </button>
                 <button type="button" onClick={goNext} className="absolute right-3 top-1/2 z-10 hidden h-14 w-14 -translate-y-1/2 items-center justify-center rounded-full bg-black/25 text-4xl text-white/80 backdrop-blur hover:bg-black/40 lg:flex">
                   ›
+                </button>
+              </>
+            )}
+
+            {!isDesktop && images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={goPrev}
+                  className={`${carouselButtonClass} left-3 lg:hidden`}
+                  aria-label="Previous image"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button
+                  type="button"
+                  onClick={goNext}
+                  className={`${carouselButtonClass} right-3 lg:hidden`}
+                  aria-label="Next image"
+                >
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </>
             )}

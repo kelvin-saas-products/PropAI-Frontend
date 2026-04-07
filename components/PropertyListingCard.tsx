@@ -141,6 +141,7 @@ function LoginPromptDialog({ onClose, onGoLogin }: { onClose: () => void; onGoLo
 interface CarouselProps {
   images: string[]
   address: string
+  href: string
   listingType: 'sale' | 'rent'
   badgeLabel: string
   badgeColor: BadgeColor
@@ -152,6 +153,7 @@ interface CarouselProps {
 function ImageCarousel({
   images,
   address,
+  href,
   listingType,
   badgeLabel,
   badgeColor,
@@ -159,6 +161,7 @@ function ImageCarousel({
   isSaved,
   layout,
 }: CarouselProps) {
+  const router = useRouter()
   const slides = images.length > 0 ? images : [FALLBACK_LISTING_IMAGE]
   const total = slides.length
   const isRent = listingType === 'rent'
@@ -272,14 +275,35 @@ function ImageCarousel({
     commitIndex(i)
   }
 
+  const handleNavigate = () => {
+    if (swipeMoved.current || isDotDragging.current) return
+    router.push(href)
+  }
+
+  const handleArrowClick = (e: React.MouseEvent<HTMLButtonElement>, direction: 'prev' | 'next') => {
+    e.preventDefault()
+    e.stopPropagation()
+    commitIndex(direction === 'prev' ? index - 1 : index + 1)
+  }
+
   const displayIndex = liveIndex ?? index
   const mediaStyle = getMediaStyle(layout)
 
   return (
     <div
       ref={containerRef}
-      className="relative flex-shrink-0 overflow-hidden select-none bg-surface"
+      className="relative flex-shrink-0 overflow-hidden select-none bg-surface cursor-pointer"
       style={mediaStyle}
+      onClick={handleNavigate}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          handleNavigate()
+        }
+      }}
+      role="link"
+      tabIndex={0}
+      aria-label={`Open ${address}`}
     >
       <div
         ref={stripRef}
@@ -324,6 +348,26 @@ function ImageCarousel({
 
       {total > 1 && (
         <>
+          <button
+            type="button"
+            onClick={e => handleArrowClick(e, 'prev')}
+            className="absolute left-2.5 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/55"
+            aria-label="Previous image"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={e => handleArrowClick(e, 'next')}
+            className="absolute right-2.5 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/55"
+            aria-label="Next image"
+          >
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.25} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
           <div
             className="absolute left-1/2 -translate-x-1/2 pointer-events-none z-[9] rounded-full"
             style={{
@@ -614,6 +658,7 @@ export default function PropertyListingCard({
       <ImageCarousel
         images={p.images}
         address={p.address}
+        href={href}
         listingType={p.listingType}
         badgeLabel={p.badge.label}
         badgeColor={p.badge.color}
