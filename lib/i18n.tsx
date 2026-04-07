@@ -27,7 +27,7 @@ interface I18nContextProps {
   language: Language
   setLanguage: (l: Language) => void
   t: (key: string) => string
-  countryReady: boolean   // true once IP or saved state has been resolved
+  countryReady: boolean
 }
 
 const translations: Record<Language, Record<string, string>> = {
@@ -58,13 +58,18 @@ const I18nContext = createContext<I18nContextProps | undefined>(undefined)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [country, setCountryState] = useState<Country>('Australia')
-  const [language, setLanguage]    = useState<Language>('en')
+  const [language, setLanguage] = useState<Language>('en')
   const [countryReady, setCountryReady] = useState(false)
 
-  // On mount: restore saved preference, or detect from IP
   useEffect(() => {
     async function init() {
-      // 1. Check localStorage first — user's explicit choice wins
+      const urlCountry = readCountryFromUrl()
+      if (urlCountry) {
+        setCountryState(urlCountry)
+        setCountryReady(true)
+        return
+      }
+
       const saved = typeof window !== 'undefined'
         ? localStorage.getItem(STORAGE_KEY)
         : null
@@ -75,20 +80,19 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // 2. Fall back to IP-based detection
       try {
         const geo = await getCountryFromIp()
         if (SUPPORTED_COUNTRIES.includes(geo.country as Country)) {
           setCountryState(geo.country as Country)
         }
       } catch {
-        // silently keep default (Australia)
+        // Keep the default when geo lookup is unavailable.
       } finally {
         setCountryReady(true)
       }
     }
 
-    init()
+    void init()
   }, [])
 
   const setCountry = (newCountry: Country) => {
@@ -96,7 +100,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, newCountry)
     }
-    // Switch back to English if leaving Thailand
     if (newCountry !== 'Thailand' && language === 'th') {
       setLanguage('en')
     }
