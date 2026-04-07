@@ -90,7 +90,9 @@ export default function BuyPageClient() {
   const urlCountry = searchParams.get('country') ?? ''
   const minPrice = Number(searchParams.get('minPrice') || 0)
   const maxPrice = Number(searchParams.get('maxPrice') || 0)
-  const minBeds = Number(searchParams.get('beds') || 0)
+  const rawBeds = searchParams.get('beds') || ''
+  const bedValue = Number(rawBeds.split(',')[0] || 0)
+  const bedMatch = searchParams.get('bedsMatch') === 'exact' ? 'exact' : 'min'
   const urlPage = Math.max(1, Number(searchParams.get('page') || 1))
   const urlPageSize = (PAGE_SIZE_OPTIONS.includes(Number(searchParams.get('pageSize')) as PageSize)
     ? Number(searchParams.get('pageSize'))
@@ -138,7 +140,8 @@ export default function BuyPageClient() {
         const result = await getProperties({
           listingType: 'sale',
           country: activeCountry,
-          beds: minBeds || undefined,
+          beds: bedValue || undefined,
+          beds_match: bedMatch,
           min_price: minPrice || undefined,
           max_price: maxPrice || undefined,
           sort_by: urlSort,
@@ -163,7 +166,7 @@ export default function BuyPageClient() {
         else setLoading(false)
       }
     },
-    [activeCountry, countryReady, maxPrice, minBeds, minPrice, urlPageSize, urlSort]
+    [activeCountry, bedMatch, bedValue, countryReady, maxPrice, minPrice, urlPageSize, urlSort]
   )
 
   useEffect(() => {
@@ -187,7 +190,11 @@ export default function BuyPageClient() {
   const handlePageSizeChange = (pageSize: PageSize) => pushParams({ pageSize, page: 1 })
   const handleSortChange = (sort: SortKey) => pushParams({ sort, page: 1 })
 
-  const items = layout.usesVirtualScroll ? feedItems : ((data?.items ?? []) as SalePropertyCard[])
+  const items = useMemo(() => {
+    const source = layout.usesVirtualScroll ? feedItems : ((data?.items ?? []) as SalePropertyCard[])
+    if (bedMatch !== 'exact' || !bedValue) return source
+    return source.filter(item => item.beds === bedValue)
+  }, [bedMatch, bedValue, data?.items, feedItems, layout.usesVirtualScroll])
 
   const handleLoadMore = useCallback(() => {
     if (!layout.usesVirtualScroll || !data || loading || loadingMore) return
@@ -196,7 +203,7 @@ export default function BuyPageClient() {
     void fetchPage(nextPage, true)
   }, [data, feedItems.length, fetchPage, layout.usesVirtualScroll, loading, loadingMore, urlPageSize])
 
-  const anyFiltersActive = !!(minPrice || maxPrice || minBeds)
+  const anyFiltersActive = !!(minPrice || maxPrice || bedValue)
   const breadcrumbs = useMemo(() => {
     const items: { label: string; href?: string }[] = [
       { label: 'Home', href: '/' },
@@ -205,14 +212,14 @@ export default function BuyPageClient() {
     ]
     if (anyFiltersActive) {
       const parts: string[] = []
-      if (minBeds) parts.push(`${minBeds}+ beds`)
+      if (bedValue) parts.push(bedMatch === 'exact' ? `${bedValue} beds only` : `${bedValue}+ beds`)
       if (minPrice && maxPrice) parts.push(`$${(minPrice / 1000).toFixed(0)}k – $${(maxPrice / 1000).toFixed(0)}k`)
       else if (minPrice) parts.push(`Over $${(minPrice / 1_000_000).toFixed(1)}M`)
       else if (maxPrice) parts.push(`Under $${(maxPrice / 1000).toFixed(0)}k`)
       if (parts.length) items.push({ label: parts.join(' · ') })
     }
     return items
-  }, [activeCountry, anyFiltersActive, maxPrice, minBeds, minPrice])
+  }, [activeCountry, anyFiltersActive, bedMatch, bedValue, maxPrice, minPrice])
 
   return (
     <div className="flex flex-col min-h-screen bg-bg">

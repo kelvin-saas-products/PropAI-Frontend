@@ -60,6 +60,17 @@ const BED_OPTIONS: { label: string; value: string }[] = [
   { label: '5+',  value: '5' },
 ]
 
+type BedsMatchMode = 'min' | 'exact'
+
+function normalizeBedValue(raw: string): string {
+  const first = raw.split(',')[0] ?? ''
+  return /^[1-9]\d*$/.test(first) ? first : ''
+}
+
+function normalizeBedsMatch(raw: string | null): BedsMatchMode {
+  return raw === 'exact' ? 'exact' : 'min'
+}
+
 const PROPERTY_TYPES = [
   'House', 'Apartment', 'Townhouse', 'Villa',
   'Condo', 'Penthouse', 'Studio', 'Acreage', 'Unit', 'Land',
@@ -227,20 +238,22 @@ function PriceSlider({ stops, minIdx, maxIdx, onMinIdx, onMaxIdx }: PriceSliderP
 // Bedroom multi-select button group
 // ─────────────────────────────────────────────────────────────────
 interface BedsGroupProps {
-  selected: Set<string>
-  onToggle: (val: string) => void
+  selected: string
+  mode: BedsMatchMode
+  onSelect: (val: string) => void
 }
 
-function BedsButtonGroup({ selected, onToggle }: BedsGroupProps) {
+function BedsButtonGroup({ selected, mode, onSelect }: BedsGroupProps) {
   return (
     <div className="flex rounded-xl overflow-hidden border border-subtle">
       {BED_OPTIONS.map((opt, i) => {
-        const isAny      = opt.value === ''
-        const isSelected = isAny ? selected.size === 0 : selected.has(opt.value)
+        const isAny = opt.value === ''
+        const isSelected = isAny ? !selected : selected === opt.value
+        const label = isAny ? opt.label : (mode === 'exact' ? opt.value : `${opt.value}+`)
         return (
           <button
             key={opt.value}
-            onClick={() => onToggle(opt.value)}
+            onClick={() => onSelect(opt.value)}
             className={[
               'flex-1 py-2.5 text-sm font-bold transition-colors',
               i > 0 ? 'border-l border-subtle' : '',
@@ -249,7 +262,7 @@ function BedsButtonGroup({ selected, onToggle }: BedsGroupProps) {
                 : 'bg-white text-muted hover:bg-surface hover:text-ink',
             ].join(' ')}
           >
-            {opt.label}
+            {label}
           </button>
         )
       })}
@@ -374,10 +387,12 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
   // Draft state — nothing applied until "Apply" is pressed
   const [draftMinIdx,   setDraftMinIdx]   = useState(() => urlToMinIdx(searchParams.get('minPrice') || ''))
   const [draftMaxIdx,   setDraftMaxIdx]   = useState(() => urlToMaxIdx(searchParams.get('maxPrice') || ''))
-  const [draftBeds,     setDraftBeds]     = useState<Set<string>>(() => {
-    const raw = searchParams.get('beds') || ''
-    return raw ? new Set(raw.split(',')) : new Set()
-  })
+  const [draftBeds,     setDraftBeds]     = useState<string>(
+    () => normalizeBedValue(searchParams.get('beds') || '')
+  )
+  const [draftBedsMode, setDraftBedsMode] = useState<BedsMatchMode>(
+    () => normalizeBedsMatch(searchParams.get('bedsMatch'))
+  )
   const [draftTypes,    setDraftTypes]    = useState<string[]>(
     searchParams.get('types') ? searchParams.get('types')!.split(',') : []
   )
@@ -388,19 +403,13 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
     if (!open) return
     setDraftMinIdx(urlToMinIdx(searchParams.get('minPrice') || ''))
     setDraftMaxIdx(urlToMaxIdx(searchParams.get('maxPrice') || ''))
-    const rawBeds = searchParams.get('beds') || ''
-    setDraftBeds(rawBeds ? new Set(rawBeds.split(',')) : new Set())
+    setDraftBeds(normalizeBedValue(searchParams.get('beds') || ''))
+    setDraftBedsMode(normalizeBedsMatch(searchParams.get('bedsMatch')))
     setDraftTypes(searchParams.get('types') ? searchParams.get('types')!.split(',') : [])
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  function toggleBed(val: string) {
-    setDraftBeds(prev => {
-      const next = new Set(prev)
-      if (val === '') return new Set()          // "Any" clears all
-      if (next.has(val)) next.delete(val)
-      else               next.add(val)
-      return next
-    })
+  function selectBed(val: string) {
+    setDraftBeds(val)
   }
 
   function toggleType(type: string) {
@@ -413,7 +422,8 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
     onApply({
       minPrice: draftMinIdx === 0       ? '' : String(priceStops[draftMinIdx].value),
       maxPrice: draftMaxIdx === lastIdx ? '' : String(priceStops[draftMaxIdx].value),
-      beds:     Array.from(draftBeds).join(','),
+      beds: draftBeds,
+      bedsMatch: draftBeds && draftBedsMode === 'exact' ? 'exact' : '',
       types:    draftTypes.join(','),
     })
     onClose()
@@ -422,7 +432,8 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
   function handleReset() {
     setDraftMinIdx(0)
     setDraftMaxIdx(lastIdx)
-    setDraftBeds(new Set())
+    setDraftBeds('')
+    setDraftBedsMode('min')
     setDraftTypes([])
     setNearbySuburbs(false)
   }
@@ -496,13 +507,29 @@ function FiltersPanel({ open, onClose, listingType, searchParams, onApply, ancho
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 18h18" />
               </svg>
               <p className="text-sm font-bold text-ink">Bedrooms</p>
-              {draftBeds.size > 0 && (
+              {draftBeds && (
                 <span className="ml-auto text-xs text-teal font-semibold">
-                  {Array.from(draftBeds).sort().map(v => `${v}+`).join(', ')}
+                  {draftBedsMode === 'exact' ? `${draftBeds} only` : `${draftBeds}+`}
                 </span>
               )}
             </div>
-            <BedsButtonGroup selected={draftBeds} onToggle={toggleBed} />            
+            <div className="mb-2 grid grid-cols-2 gap-1.5">
+              {(['min', 'exact'] as BedsMatchMode[]).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setDraftBedsMode(mode)}
+                  className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    draftBedsMode === mode ? 'bg-ink text-white' : 'bg-surface text-muted hover:text-ink'
+                  }`}
+                >
+                  {mode === 'min' ? 'Minimum (1+)' : 'Exact only'}
+                </button>
+              ))}
+            </div>
+            <BedsButtonGroup selected={draftBeds} mode={draftBedsMode} onSelect={selectBed} />
+            <p className="text-xs text-muted mt-2">
+              {draftBedsMode === 'exact' ? 'Matches only the exact bedroom count' : 'Matches this count or more'}
+            </p>
           </div>
           {/* Property types */}
           <div className="px-6 py-5" style={{ padding: '20px 0'}}>
@@ -610,7 +637,8 @@ export default function ListingsNavbar({ listingType }: Props) {
 
   const currentMinPrice = searchParams.get('minPrice') || ''
   const currentMaxPrice = searchParams.get('maxPrice') || ''
-  const currentBeds     = searchParams.get('beds') || ''
+  const currentBeds     = normalizeBedValue(searchParams.get('beds') || '')
+  const currentBedsMode = normalizeBedsMatch(searchParams.get('bedsMatch'))
   const currentTypes    = useMemo(() =>
     searchParams.get('types') ? searchParams.get('types')!.split(',') : [],
     [searchParams]
@@ -659,7 +687,9 @@ export default function ListingsNavbar({ listingType }: Props) {
   }, [priceActive, currentMinPrice, currentMaxPrice, priceStops])
 
   const bedsLabel = bedsActive
-    ? currentBeds.split(',').sort().map(v => `${v}+`).join(', ') + ' beds'
+    ? currentBedsMode === 'exact'
+      ? `${currentBeds} only`
+      : `${currentBeds}+ beds`
     : 'Beds'
 
   const typesLabel = typesActive
@@ -667,12 +697,6 @@ export default function ListingsNavbar({ listingType }: Props) {
     : 'Property types'
 
   const currentListing = LISTING_TYPES.find(l => l.value === listingType)!
-
-  // Inline beds from URL as a Set for the dropdown group
-  const currentBedsSet = useMemo(() =>
-    currentBeds ? new Set(currentBeds.split(',')) : new Set<string>(),
-    [currentBeds]
-  )
 
   return (
     <>
@@ -820,16 +844,39 @@ export default function ListingsNavbar({ listingType }: Props) {
           {/* Beds */}
           <FilterDropdown label={bedsLabel} active={bedsActive} width="w-64">
             <p className="text-xs font-bold text-muted uppercase tracking-wider mb-3">Bedrooms</p>
+            <div className="mb-2 grid grid-cols-2 gap-1.5">
+              {(['min', 'exact'] as BedsMatchMode[]).map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => {
+                    if (!currentBeds) return
+                    pushFilter({ bedsMatch: mode === 'exact' ? 'exact' : '' })
+                  }}
+                  className={`px-3 py-2 rounded-xl text-sm font-semibold transition-colors ${
+                    currentBedsMode === mode ? 'bg-ink text-white' : 'bg-surface text-muted hover:text-ink'
+                  }`}
+                >
+                  {mode === 'min' ? 'Minimum (1+)' : 'Exact only'}
+                </button>
+              ))}
+            </div>
             <BedsButtonGroup
-              selected={currentBedsSet}
-              onToggle={val => {
-                const next = new Set(currentBedsSet)
-                if (val === '') { pushFilter({ beds: '' }); return }
-                if (next.has(val)) next.delete(val); else next.add(val)
-                pushFilter({ beds: Array.from(next).join(',') })
+              selected={currentBeds}
+              mode={currentBedsMode}
+              onSelect={val => {
+                if (val === '') {
+                  pushFilter({ beds: '', bedsMatch: '' })
+                  return
+                }
+                pushFilter({
+                  beds: val,
+                  bedsMatch: currentBedsMode === 'exact' ? 'exact' : '',
+                })
               }}
             />
-            <p className="text-xs text-muted mt-2">Select one or more</p>
+            <p className="text-xs text-muted mt-2">
+              {currentBedsMode === 'exact' ? 'Matches only the exact bedroom count' : 'Matches this count or more'}
+            </p>
           </FilterDropdown>
 
           {/* Property types */}

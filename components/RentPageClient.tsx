@@ -54,7 +54,9 @@ export default function RentPageClient() {
   const urlCountry = searchParams.get('country') ?? ''
   const minPrice = Number(searchParams.get('minPrice') || 0)
   const maxPrice = Number(searchParams.get('maxPrice') || 0)
-  const minBeds = Number(searchParams.get('beds') || 0)
+  const rawBeds = searchParams.get('beds') || ''
+  const bedValue = Number(rawBeds.split(',')[0] || 0)
+  const bedMatch = searchParams.get('bedsMatch') === 'exact' ? 'exact' : 'min'
   const urlPage = Math.max(1, Number(searchParams.get('page') || 1))
   const urlPageSize = (PAGE_SIZE_OPTIONS.includes(Number(searchParams.get('pageSize')) as PageSize)
     ? Number(searchParams.get('pageSize'))
@@ -102,7 +104,8 @@ export default function RentPageClient() {
         const result = await getProperties({
           listingType: 'rent',
           country: activeCountry,
-          beds: minBeds || undefined,
+          beds: bedValue || undefined,
+          beds_match: bedMatch,
           min_weekly_rent: minPrice || undefined,
           max_weekly_rent: maxPrice || undefined,
           sort_by: urlSort,
@@ -127,7 +130,7 @@ export default function RentPageClient() {
         else setLoading(false)
       }
     },
-    [activeCountry, countryReady, maxPrice, minBeds, minPrice, urlPageSize, urlSort]
+    [activeCountry, bedMatch, bedValue, countryReady, maxPrice, minPrice, urlPageSize, urlSort]
   )
 
   useEffect(() => {
@@ -154,9 +157,11 @@ export default function RentPageClient() {
   const items = useMemo(
     () => {
       const sourceItems = layout.usesVirtualScroll ? feedItems : ((data?.items ?? []) as RentPropertyCard[])
-      return filterRentItemsByPrice(sourceItems, minPrice, maxPrice)
+      const priceFiltered = filterRentItemsByPrice(sourceItems, minPrice, maxPrice)
+      if (bedMatch !== 'exact' || !bedValue) return priceFiltered
+      return priceFiltered.filter(item => item.beds === bedValue)
     },
-    [data?.items, feedItems, layout.usesVirtualScroll, minPrice, maxPrice]
+    [bedMatch, bedValue, data?.items, feedItems, layout.usesVirtualScroll, minPrice, maxPrice]
   )
 
   const handleLoadMore = useCallback(() => {
@@ -166,7 +171,7 @@ export default function RentPageClient() {
     void fetchPage(nextPage, true)
   }, [data, feedItems.length, fetchPage, layout.usesVirtualScroll, loading, loadingMore, urlPageSize])
 
-  const anyFiltersActive = !!(minPrice || maxPrice || minBeds)
+  const anyFiltersActive = !!(minPrice || maxPrice || bedValue)
   const breadcrumbs = useMemo(() => {
     const crumbs: { label: string; href?: string }[] = [
       { label: 'Home', href: '/' },
@@ -175,14 +180,14 @@ export default function RentPageClient() {
     ]
     if (anyFiltersActive) {
       const parts: string[] = []
-      if (minBeds) parts.push(`${minBeds}+ beds`)
+      if (bedValue) parts.push(bedMatch === 'exact' ? `${bedValue} beds only` : `${bedValue}+ beds`)
       if (minPrice && maxPrice) parts.push(`$${minPrice}/wk – $${maxPrice}/wk`)
       else if (minPrice) parts.push(`Over $${minPrice}/wk`)
       else if (maxPrice) parts.push(`Under $${maxPrice}/wk`)
       if (parts.length) crumbs.push({ label: parts.join(' · ') })
     }
     return crumbs
-  }, [activeCountry, anyFiltersActive, maxPrice, minBeds, minPrice])
+  }, [activeCountry, anyFiltersActive, bedMatch, bedValue, maxPrice, minPrice])
 
   return (
     <div className="flex flex-col min-h-screen bg-bg">

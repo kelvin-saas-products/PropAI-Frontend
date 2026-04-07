@@ -22,6 +22,7 @@ export interface PropertyFilters {
   country?: string
   state?: string
   beds?: number
+  beds_match?: 'min' | 'exact'
   min_price?: number
   max_price?: number
   min_weekly_rent?: number
@@ -70,6 +71,7 @@ export function getProperties(filters: PropertyFilters): Promise<PaginatedProper
   if (filters.country)       params.set('country',         filters.country)
   if (filters.state)         params.set('state',           filters.state)
   if (filters.beds)          params.set('beds',            String(filters.beds))
+  if (filters.beds_match)    params.set('beds_match',      filters.beds_match)
   if (filters.min_price)     params.set('min_price',       String(filters.min_price))
   if (filters.max_price)     params.set('max_price',       String(filters.max_price))
   if (filters.min_weekly_rent) params.set('min_weekly_rent', String(filters.min_weekly_rent))
