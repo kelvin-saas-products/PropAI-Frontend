@@ -61,6 +61,18 @@ export const getFeaturedRent = (country?: string) => {
 export const getPropertyBySlug = (slug: string) => apiFetch<AnyProperty>(`/properties/${slug}`)
 export const getPropertyById   = (id: string)   => apiFetch<AnyProperty>(`/properties/id/${id}`)
 
+export async function getPropertyCardById(id: string): Promise<AnyPropertyCard | null> {
+  const params = new URLSearchParams({ property_id: id, page: '1', page_size: '50' })
+  const result = await apiFetch<PaginatedProperties>(`/properties?${params.toString()}`, { cache: 'no-store' })
+  return result.items.find(item => item.property_id === id) ?? null
+}
+
+export async function getPropertyCardBySlug(slug: string): Promise<AnyPropertyCard | null> {
+  const params = new URLSearchParams({ slug, page: '1', page_size: '50' })
+  const result = await apiFetch<PaginatedProperties>(`/properties?${params.toString()}`, { cache: 'no-store' })
+  return result.items.find(item => item.slug === slug) ?? null
+}
+
 /**
  * Paginated property list. Country is ALWAYS sent to the backend so
  * server-side filtering prevents cross-country leakage.

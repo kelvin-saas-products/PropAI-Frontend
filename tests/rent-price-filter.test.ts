@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { filterRentItemsByPrice } from '../lib/rent-price-filter'
-import type { RentPropertyCard } from '../lib/types'
+import { filterRentItemsByPrice } from '../lib/rent-price-filter.ts'
+import type { RentPropertyCard } from '../lib/types.ts'
 
 function rentCard(overrides: Partial<RentPropertyCard>): RentPropertyCard {
   return {
@@ -61,4 +61,3 @@ test('excludes items with no usable weekly rent when a filter is active', () => 
     ['usable']
   )
 })
-

@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { valueToMinStopIdx, valueToMaxStopIdx } from '../lib/price-stop-utils'
+import { valueToMinStopIdx, valueToMaxStopIdx } from '../lib/price-stop-utils.ts'
 
 const RENT_STOPS = [
   { value: 0, label: 'Any' },
@@ -35,4 +35,3 @@ test('advanced panel and dropdown produce identical indices for same URL values'
   assert.equal(panelMin, dropdownMin)
   assert.equal(panelMax, dropdownMax)
 })
-
