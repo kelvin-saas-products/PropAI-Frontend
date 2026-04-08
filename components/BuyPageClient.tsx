@@ -196,6 +196,16 @@ export default function BuyPageClient() {
     return source.filter(item => item.beds === bedValue)
   }, [bedMatch, bedValue, data?.items, feedItems, layout.usesVirtualScroll])
 
+  const isClientFilteredResultComplete = useMemo(() => {
+    if (!data) return false
+    return data.page === 1 && data.total <= data.page_size
+  }, [data])
+
+  const effectiveTotal = isClientFilteredResultComplete ? items.length : (data?.total ?? items.length)
+  const effectiveTotalPages = isClientFilteredResultComplete
+    ? Math.max(1, Math.ceil(items.length / urlPageSize))
+    : (data?.total_pages ?? 1)
+
   const handleLoadMore = useCallback(() => {
     if (!layout.usesVirtualScroll || !data || loading || loadingMore) return
     if (feedItems.length >= data.total) return
@@ -277,7 +287,7 @@ export default function BuyPageClient() {
                     items={items}
                     itemHeight={layout.cardHeightPx}
                     gap={layout.gapPx}
-                    hasMore={(data?.total ?? 0) > items.length}
+                    hasMore={effectiveTotal > items.length}
                     loadingMore={loadingMore}
                     onEndReached={handleLoadMore}
                     renderItem={property => (
@@ -316,8 +326,8 @@ export default function BuyPageClient() {
                 {data && !layout.usesVirtualScroll && (
                   <PaginationBar
                     page={data.page}
-                    totalPages={data.total_pages}
-                    total={data.total}
+                    totalPages={effectiveTotalPages}
+                    total={effectiveTotal}
                     pageSize={urlPageSize}
                     onPageChange={handlePageChange}
                     onPageSizeChange={handlePageSizeChange}
